@@ -341,6 +341,99 @@ app.get('/api/download-file', (req, res) => {
   });
 });
 
+// 11. Sugerencias y recomendaciones privadas (Almacenamiento privado + Webhook opcional)
+const DATA_DIR = path.join(PROJECT_ROOT, 'data');
+const SUGGESTIONS_FILE = path.join(DATA_DIR, 'suggestions.json');
+
+function readSuggestions() {
+  try {
+    if (fs.existsSync(SUGGESTIONS_FILE)) {
+      return JSON.parse(fs.readFileSync(SUGGESTIONS_FILE, 'utf8'));
+    }
+  } catch (e) {
+    console.error('[SUGGESTIONS READ ERROR]:', e.message);
+  }
+  return [];
+}
+
+function saveSuggestions(list) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(SUGGESTIONS_FILE, JSON.stringify(list, null, 2), 'utf8');
+  } catch (e) {
+    console.error('[SUGGESTIONS SAVE ERROR]:', e.message);
+  }
+}
+
+app.post('/api/suggestions', async (req, res) => {
+  try {
+    const { name, contact, message } = req.body;
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      return res.status(400).json({ error: 'La recomendación no puede estar vacía.' });
+    }
+
+    const cleanMessage = message.trim().slice(0, 2000);
+    const cleanName = (name && typeof name === 'string' && name.trim()) ? name.trim().slice(0, 100) : 'Anónimo';
+    const cleanContact = (contact && typeof contact === 'string' && contact.trim()) ? contact.trim().slice(0, 150) : '';
+
+    const newSuggestion = {
+      id: 'sug_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7),
+      timestamp: new Date().toISOString(),
+      name: cleanName,
+      contact: cleanContact,
+      message: cleanMessage
+    };
+
+    const currentList = readSuggestions();
+    currentList.unshift(newSuggestion);
+    saveSuggestions(currentList);
+
+    // Opcional: Reenvío instantáneo a Discord Webhook si está definido en variables de entorno de Render
+    const discordWebhook = process.env.DISCORD_WEBHOOK_URL;
+    if (discordWebhook && typeof fetch === 'function') {
+      try {
+        fetch(discordWebhook, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            embeds: [{
+              title: '💡 Nueva Sugerencia en MediaDownloader',
+              color: 0xf472b6,
+              fields: [
+                { name: '👤 Usuario / Alias', value: cleanName, inline: true },
+                { name: '📱 Contacto', value: cleanContact || 'No especificado', inline: true },
+                { name: '💬 Recomendación', value: cleanMessage }
+              ],
+              footer: { text: 'MediaDownloader • Edición Lunysse' },
+              timestamp: new Date().toISOString()
+            }]
+          })
+        }).catch(() => {});
+      } catch (err) {}
+    }
+
+    res.json({ success: true, message: '¡Gracias! Tu sugerencia ha sido enviada con éxito.' });
+  } catch (err) {
+    console.error('[API SUGGESTIONS POST ERROR]:', err.message);
+    res.status(500).json({ error: 'Fallo al procesar la sugerencia.' });
+  }
+});
+
+// 12. Obtener sugerencias privadas (Protegido por clave de administrador para Lunysse)
+app.get('/api/suggestions', (req, res) => {
+  const adminKey = req.query.key || req.headers['x-admin-key'];
+  const expectedKey = process.env.ADMIN_KEY || 'lunysse2026';
+
+  if (!adminKey || adminKey !== expectedKey) {
+    return res.status(403).json({ error: 'Acceso no autorizado al buzón de sugerencias.' });
+  }
+
+  const list = readSuggestions();
+  res.json({ success: true, count: list.length, suggestions: list });
+});
+
 // Iniciar servidor (compatible con Localhost y Cloud 0.0.0.0)
 server.listen(PORT, HOST, () => {
   console.log(`====================================================`);

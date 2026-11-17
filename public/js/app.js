@@ -1499,7 +1499,15 @@ function initSuggestionsSystem() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, contact, message })
         });
-        const data = await res.json();
+        
+        let data = {};
+        const text = await res.text();
+        try {
+          data = JSON.parse(text);
+        } catch (parseErr) {
+          throw new Error('El servidor aún no tiene la ruta de sugerencias. Asegúrate de haber subido la carpeta server a GitHub.');
+        }
+
         if (!res.ok) throw new Error(data.error || 'Error al enviar');
 
         if (suggestSuccessAlert) suggestSuccessAlert.classList.remove('hidden');
@@ -1545,7 +1553,14 @@ async function loadAdminSuggestions() {
 
   try {
     const res = await fetch(`/api/suggestions?key=${encodeURIComponent(lunysseAdminKey)}`);
-    const data = await res.json();
+    let data = {};
+    const text = await res.text();
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      adminSuggestionsList.innerHTML = `<div class="text-center py-10 text-amber-400 text-xs font-semibold"><i class="fa-solid fa-clock-rotate-left mr-1.5"></i>El servidor aún no tiene la ruta de sugerencias. Sube la carpeta server a GitHub.</div>`;
+      return;
+    }
 
     if (!res.ok) {
       sessionStorage.removeItem('lunysse_admin_key');
