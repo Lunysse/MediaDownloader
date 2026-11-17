@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MediaDownloader Ultra | Lunysse Edition</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="css/styles.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            yt: '#FF0033',
+            spotify: '#1ED760',
+            darkSlate: '#080c14',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-darkSlate text-slate-100 min-h-screen flex flex-col font-sans selection:bg-rose-500 selection:text-white relative">
+
+  <!-- Cosmic Space Canvas -->
+  <canvas id="spaceStarsCanvas"></canvas>
+
+  <!-- Dynamic Ambient Glow Refractions -->
+  <div id="ambientYt" class="ambient-glow ambient-yt"></div>
+  <div id="ambientSpot" class="ambient-glow ambient-spotify"></div>
+  <div id="ambientGray" class="ambient-glow ambient-gray opacity-0"></div>
+
+  <!-- Audio Player for 30s Spotify Previews -->
+  <audio id="previewAudioPlayer" preload="none"></audio>
+
+  <!-- Top Navigation Header with Apple Liquid Glass Look -->
+  <header class="border-b border-white/10 bg-slate-950/60 backdrop-blur-2xl sticky top-0 z-40 transition-colors duration-300">
+    <div class="max-w-6xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <!-- App Brand & Lunysse Badge -->
+      <div class="flex items-center space-x-3.5">
+        <div id="appBrandIconBox" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-indigo-500 to-emerald-400 p-[1.5px] shadow-lg shadow-indigo-500/20 transition-all duration-300">
+          <div class="w-full h-full bg-slate-950/90 rounded-2xl flex items-center justify-center backdrop-blur-md">
+            <i id="appBrandIcon" class="fa-solid fa-bolt text-transparent bg-gradient-to-br from-rose-400 to-emerald-400 bg-clip-text text-lg"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <!-- App Title -->
+            <h1 id="appTitleText" class="text-base font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent transition-all duration-300">
+              MediaDownloader
+            </h1>
+            
+            <!-- Lunysse Static Glass Badge (Sin acción, con corazón rosa) -->
+            <div id="badgeLunysse" class="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-pink-500/10 text-pink-300 border border-pink-500/30 text-[10px] font-mono font-bold uppercase tracking-wider shadow-sm select-none">
+              <i class="fa-solid fa-heart text-pink-400 text-xs"></i>
+              <span>Lunysse</span>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2 text-[11px] text-slate-400">
+            <span class="flex items-center space-x-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-slate-300 font-medium">Motores activos</span>
+            </span>
+            <span class="text-slate-600">•</span>
+            <span class="text-slate-500 font-mono">yt-dlp + FFmpeg</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Action Shortcuts -->
+      <div class="flex items-center space-x-2.5">
+        <span class="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-mono font-bold">
+          <i class="fa-solid fa-shield-halved text-xs"></i>
+          <span>127.0.0.1 Aislado</span>
+        </span>
+        <button id="btnOpenDownloadsTop" title="Abrir carpeta de descargas en el Explorador de Windows" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-white/10 shadow-sm transition active:scale-95 group">
+          <i class="fa-solid fa-folder-open text-amber-400 group-hover:scale-110 transition-transform"></i>
+          <span>Carpeta</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="max-w-5xl mx-auto px-4 py-7 flex-1 w-full space-y-6 z-10">
+
+    <!-- Sliding Segmented Tab Navigation (Liquid Glass Capsule) -->
+    <div class="flex justify-center">
+      <div class="relative p-1.5 rounded-[22px] bg-slate-900/80 border border-white/10 backdrop-blur-2xl shadow-2xl flex items-center max-w-full overflow-x-auto">
+        <!-- Moving Capsule Indicator -->
+        <div id="tabIndicator" class="tab-indicator bg-white/10 shadow-lg border border-white/20 backdrop-blur-md"></div>
+        
+        <button id="tabYoutube" class="tab-btn active flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white transition">
+          <i class="fa-brands fa-youtube text-base text-rose-500"></i>
+          <span>YouTube</span>
+        </button>
+        <button id="tabSpotify" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition">
+          <i class="fa-brands fa-spotify text-base text-emerald-400"></i>
+          <span>Spotify</span>
+        </button>
+        <button id="tabHistory" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-clock-rotate-left text-base text-indigo-400"></i>
+          <span>Historial</span>
+          <span id="historyBadgeCount" class="hidden ml-1 px-1.5 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-mono border border-indigo-500/30">0</span>
+        </button>
+        <button id="tabComingSoon" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200 transition">
+          <i class="fa-solid fa-shapes text-slate-400"></i>
+          <span>Próximamente</span>
+          <span class="px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[9px] uppercase tracking-wider font-extrabold border border-slate-700">Gris</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         1. DEDICATED YOUTUBE INTERFACE VIEW
+         ==================================================================== -->
+    <div id="viewYoutube" class="space-y-6 animate-fade-in">
+      
+      <!-- YouTube Liquid Glass Banner & Input Box -->
+      <div class="liquid-glass liquid-glass-yt p-6 sm:p-8 space-y-4 shadow-2xl transition-all">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-xl border border-rose-500/30 shadow-lg shadow-rose-500/20">
+              <i class="fa-brands fa-youtube"></i>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-white">YouTube Studio Downloader</h2>
+              <p class="text-xs text-rose-200/70">Descarga videos en 4K/1080p, Shorts y audio de alta fidelidad</p>
+            </div>
+          </div>
+          <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-300 border border-rose-500/20 font-mono hidden sm:inline-block">
+            MP4 • MP3 • 320k
+          </span>
+        </div>
+
+        <!-- Input Bar for YouTube -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <div class="relative flex-1 group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-rose-400">
+              <i class="fa-brands fa-youtube text-base"></i>
+            </div>
+            <input 
+              type="text" 
+              id="urlInputYt" 
+              placeholder="Pega enlace de YouTube (ej. https://www.youtube.com/watch?v=...)..."
+              class="w-full pl-11 pr-28 py-4 bg-slate-950/80 border border-white/10 rounded-2xl text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/15 text-white transition-all shadow-inner font-medium"
+              autocomplete="off"
+            >
+            <div class="absolute right-2.5 top-2.5 bottom-2.5 flex items-center space-x-1.5">
+              <button id="btnClearYt" class="hidden p-2 text-slate-400 hover:text-white transition" title="Limpiar">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+              <button id="btnPasteYt" class="px-3 py-1.5 flex items-center space-x-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-white/10 transition active:scale-95">
+                <i class="fa-solid fa-paste text-rose-400"></i>
+                <span>Pegar</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="btnAnalyzeYt" class="px-8 py-4 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:opacity-95 text-white shadow-xl shadow-rose-600/30 transition active:scale-95 flex-shrink-0">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Analizar Video</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+          <div class="flex items-center space-x-2 text-[11px]">
+            <span class="text-slate-500">¿No tienes un enlace a mano?</span>
+            <button id="btnSampleYt" class="text-rose-400 hover:text-rose-300 underline font-semibold transition">Probar video de muestra</button>
+          </div>
+          <span class="text-slate-500 font-mono text-[11px]">Fusión automática A/V con FFmpeg</span>
+        </div>
+      </div>
+
+      <!-- Skeleton Loader for YouTube -->
+      <div id="skeletonYt" class="hidden liquid-glass p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="skeleton w-full md:w-80 h-44 rounded-2xl"></div>
+          <div class="flex-1 space-y-4">
+            <div class="skeleton w-28 h-6 rounded-full"></div>
+            <div class="skeleton w-3/4 h-8 rounded-xl"></div>
+            <div class="skeleton w-1/2 h-5 rounded-lg"></div>
+            <div class="grid grid-cols-4 gap-3 pt-3">
+              <div class="skeleton h-14 rounded-2xl"></div>
+              <div class="skeleton h-14 rounded-2xl"></div>
+              <div class="skeleton h-14 rounded-2xl"></div>
+              <div class="skeleton h-14 rounded-2xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- YouTube Result Card -->
+      <div id="youtubeCard" class="hidden liquid-glass liquid-glass-yt p-6 sm:p-8 space-y-6 animate-slide-up shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Thumbnail -->
+          <div class="relative w-full md:w-80 h-48 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border border-white/10 group shadow-2xl self-center md:self-start">
+            <img id="ytThumbnail" src="" alt="Miniatura" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+            <div id="ytDuration" class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 text-white text-xs font-mono font-bold backdrop-blur-md border border-white/10 shadow">
+              0:00
+            </div>
+            <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-rose-600 text-white text-[11px] font-black tracking-wide uppercase flex items-center space-x-1.5 shadow-lg">
+              <i class="fa-brands fa-youtube"></i>
+              <span>YouTube</span>
+            </div>
+          </div>
+
+          <!-- Video Details & Mode Select -->
+          <div class="flex-1 space-y-5">
+            <div>
+              <h2 id="ytTitle" class="text-base sm:text-xl font-extrabold text-white line-clamp-2 leading-tight">
+                Título del Video
+              </h2>
+              <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-400">
+                <span id="ytUploader" class="text-slate-300 font-semibold flex items-center space-x-1.5">
+                  <i class="fa-solid fa-circle-user text-rose-500"></i>
+                  <span>Canal</span>
+                </span>
+                <span class="text-slate-600">•</span>
+                <span id="ytViewsCount" class="text-slate-400 font-mono">0 vistas</span>
+              </div>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-sliders text-rose-500"></i>
+                <span>Tipo de Formato</span>
+              </label>
+              <div class="grid grid-cols-2 gap-3 max-w-md">
+                <button type="button" id="btnModeVideo" class="quality-chip selected-yt p-3.5 flex items-center space-x-3 text-left">
+                  <div class="w-8 h-8 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-sm">
+                    <i class="fa-solid fa-video"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-extrabold text-white">Video (MP4)</div>
+                    <div class="text-[11px] text-slate-400">Video + Audio HD</div>
+                  </div>
+                </button>
+
+                <button type="button" id="btnModeAudio" class="quality-chip p-3.5 flex items-center space-x-3 text-left">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
+                    <i class="fa-solid fa-music"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-extrabold text-white">Solo Audio</div>
+                    <div class="text-[11px] text-slate-400">MP3 / M4A / FLAC</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Video Quality Chips Grid -->
+            <div id="ytVideoChipsSection" class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-display text-slate-400"></i>
+                <span>Resolución del Video</span>
+              </label>
+              <div id="ytQualityChipsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Audio Format Chips Grid -->
+            <div id="ytAudioChipsSection" class="hidden space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-headphones text-slate-400"></i>
+                <span>Formato de Audio</span>
+              </label>
+              <div id="ytAudioChipsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <div class="quality-chip selected-yt p-3 text-center" data-format="mp3">
+                  <div class="text-xs font-extrabold text-white">MP3</div>
+                  <div class="text-[10px] text-emerald-400 font-semibold">320 kbps HD</div>
+                </div>
+                <div class="quality-chip p-3 text-center" data-format="m4a">
+                  <div class="text-xs font-extrabold text-white">M4A</div>
+                  <div class="text-[10px] text-slate-400">Original YT</div>
+                </div>
+                <div class="quality-chip p-3 text-center" data-format="flac">
+                  <div class="text-xs font-extrabold text-white">FLAC</div>
+                  <div class="text-[10px] text-indigo-400">Sin pérdida</div>
+                </div>
+                <div class="quality-chip p-3 text-center" data-format="wav">
+                  <div class="text-xs font-extrabold text-white">WAV</div>
+                  <div class="text-[10px] text-slate-400">Studio PCM</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-2">
+              <button id="btnDownloadYt" class="w-full sm:w-auto px-9 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:opacity-95 text-white shadow-xl shadow-rose-600/30 flex items-center justify-center space-x-2.5 transition active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span id="btnDownloadYtText">Descargar Ahora (MP4)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         2. DEDICATED SPOTIFY INTERFACE VIEW
+         ==================================================================== -->
+    <div id="viewSpotify" class="hidden space-y-6 animate-fade-in">
+      
+      <!-- Spotify Liquid Glass Banner & Input Box -->
+      <div class="liquid-glass liquid-glass-spot p-6 sm:p-8 space-y-4 shadow-2xl transition-all">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xl border border-emerald-500/30 shadow-lg shadow-emerald-500/20">
+              <i class="fa-brands fa-spotify"></i>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-white">Spotify Hi-Fi Music Studio</h2>
+              <p class="text-xs text-emerald-200/70">Canciones, Álbumes y Playlists con carátula oficial en 320 kbps</p>
+            </div>
+          </div>
+
+          <!-- Concurrency Limit Selector (Anti-Saturación de Red) -->
+          <div class="flex items-center space-x-2 bg-slate-950/70 p-1.5 rounded-2xl border border-white/10 text-xs">
+            <span class="text-slate-400 text-[11px] font-semibold pl-2">Descargas simultáneas:</span>
+            <div class="flex items-center space-x-1" id="concurrencySelector">
+              <button type="button" class="concurrency-btn px-2.5 py-1 rounded-xl text-xs font-bold text-slate-400 border border-transparent transition" data-limit="1" title="1 a la vez: Ultra seguro, cero saturación de red">1</button>
+              <button type="button" class="concurrency-btn active px-2.5 py-1 rounded-xl text-xs font-bold text-slate-200 border border-white/20 transition" data-limit="2" title="2 a la vez: Recomendado, equilibrio óptimo">2 (Recomendado)</button>
+              <button type="button" class="concurrency-btn px-2.5 py-1 rounded-xl text-xs font-bold text-slate-400 border border-transparent transition" data-limit="3" title="3 a la vez: Rápido para conexiones de alta velocidad">3</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Bar for Spotify -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <div class="relative flex-1 group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-emerald-400">
+              <i class="fa-brands fa-spotify text-base"></i>
+            </div>
+            <input 
+              type="text" 
+              id="urlInputSpot" 
+              placeholder="Pega enlace de Spotify (canción, álbum o playlist)..."
+              class="w-full pl-11 pr-28 py-4 bg-slate-950/80 border border-white/10 rounded-2xl text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/15 text-white transition-all shadow-inner font-medium"
+              autocomplete="off"
+            >
+            <div class="absolute right-2.5 top-2.5 bottom-2.5 flex items-center space-x-1.5">
+              <button id="btnClearSpot" class="hidden p-2 text-slate-400 hover:text-white transition" title="Limpiar">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+              <button id="btnPasteSpot" class="px-3 py-1.5 flex items-center space-x-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-white/10 transition active:scale-95">
+                <i class="fa-solid fa-paste text-emerald-400"></i>
+                <span>Pegar</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="btnAnalyzeSpot" class="px-8 py-4 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:opacity-95 text-white shadow-xl shadow-emerald-600/30 transition active:scale-95 flex-shrink-0">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Analizar Música</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+          <div class="flex items-center space-x-2 text-[11px]">
+            <span class="text-slate-500">¿Deseas probar una canción?</span>
+            <button id="btnSampleSpot" class="text-emerald-400 hover:text-emerald-300 underline font-semibold transition">Cargar canción de muestra</button>
+          </div>
+          <span class="text-slate-500 font-mono text-[11px]">Audio transparente 320 kbps + Portada HD</span>
+        </div>
+      </div>
+
+      <!-- Skeleton Loader for Spotify -->
+      <div id="skeletonSpot" class="hidden liquid-glass p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="skeleton w-48 h-48 rounded-2xl"></div>
+          <div class="flex-1 space-y-4">
+            <div class="skeleton w-28 h-6 rounded-full"></div>
+            <div class="skeleton w-3/4 h-8 rounded-xl"></div>
+            <div class="skeleton w-1/2 h-5 rounded-lg"></div>
+            <div class="grid grid-cols-3 gap-3 pt-3">
+              <div class="skeleton h-16 rounded-2xl"></div>
+              <div class="skeleton h-16 rounded-2xl"></div>
+              <div class="skeleton h-16 rounded-2xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spotify Result Card -->
+      <div id="spotifyCard" class="hidden liquid-glass liquid-glass-spot p-6 sm:p-8 space-y-6 animate-slide-up shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Album Cover -->
+          <div class="relative w-48 h-48 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border border-white/10 shadow-2xl self-center md:self-start group">
+            <img id="spotCover" src="" alt="Carátula" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none"></div>
+            <div id="spotTypeBadge" class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-emerald-600 text-white text-[11px] font-black uppercase tracking-wider shadow">
+              Track
+            </div>
+            <!-- Single Track Preview Button -->
+            <button id="btnPlaySinglePreview" class="hidden absolute bottom-3 right-3 w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 flex items-center justify-center shadow-lg transition active:scale-90" title="Escuchar muestra oficial (30s)">
+              <i class="fa-solid fa-play ml-0.5"></i>
+            </button>
+          </div>
+
+          <!-- Details & Quality -->
+          <div class="flex-1 space-y-5">
+            <div>
+              <div class="flex items-center space-x-2 mb-1.5">
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center space-x-1">
+                  <i class="fa-brands fa-spotify"></i>
+                  <span>Spotify Oficial</span>
+                </span>
+                <span id="spotYearBadge" class="text-xs font-mono text-slate-400 font-semibold">1987</span>
+              </div>
+              <h2 id="spotTitle" class="text-lg sm:text-2xl font-extrabold text-white line-clamp-1">
+                Título de la Canción
+              </h2>
+              <p id="spotArtist" class="text-xs sm:text-sm text-slate-400 mt-1 flex items-center space-x-2">
+                <span class="text-emerald-400 font-semibold flex items-center space-x-1.5">
+                  <i class="fa-solid fa-user-music"></i>
+                  <span id="spotArtistName">Artista</span>
+                </span>
+                <span class="text-slate-600">•</span>
+                <span id="spotTrackCountBadge" class="text-slate-300 font-medium">1 canción</span>
+              </p>
+            </div>
+
+            <!-- Quality Chips -->
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-compact-disc text-emerald-500"></i>
+                <span>Calidad de Audio de Alta Fidelidad</span>
+              </label>
+              <div id="spotFormatChipsGrid" class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div class="quality-chip selected-spot p-3.5 text-left" data-format="mp3">
+                  <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-white">MP3 320 kbps</div>
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-xs"></i>
+                  </div>
+                  <div class="text-[11px] text-emerald-300 font-medium mt-0.5">Estudio + Portada HD</div>
+                </div>
+
+                <div class="quality-chip p-3.5 text-left" data-format="m4a">
+                  <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-white">M4A AAC</div>
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-xs hidden"></i>
+                  </div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">Flujo directo YT Music</div>
+                </div>
+
+                <div class="quality-chip p-3.5 text-left" data-format="flac">
+                  <div class="flex items-center justify-between">
+                    <div class="text-xs font-extrabold text-white">FLAC</div>
+                    <i class="fa-solid fa-circle-check text-emerald-400 text-xs hidden"></i>
+                  </div>
+                  <div class="text-[11px] text-slate-400 mt-0.5">Compresión sin pérdida</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-1">
+              <button id="btnDownloadSpot" class="w-full sm:w-auto px-9 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-emerald-600 via-emerald-500 to-emerald-600 hover:opacity-95 text-white shadow-xl shadow-emerald-600/30 flex items-center justify-center space-x-2.5 transition active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span id="btnDownloadSpotText">Descargar Canción (320 kbps)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Playlist / Album Tracks Table -->
+        <div id="spotTracksTableContainer" class="hidden border-t border-white/10 pt-5 space-y-3.5 animate-fade-in">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 text-xs">
+              <label class="flex items-center space-x-2 cursor-pointer font-bold text-slate-300 hover:text-white transition">
+                <input type="checkbox" id="spotSelectAll" checked class="w-4 h-4 rounded border-slate-700 text-emerald-500 focus:ring-emerald-500 bg-slate-900">
+                <span>Seleccionar todas</span>
+              </label>
+              <span class="text-slate-600">•</span>
+              <span id="spotSelectedCount" class="text-emerald-400 font-bold font-mono">0 seleccionadas</span>
+            </div>
+
+            <!-- Live Search in Playlist -->
+            <div class="relative w-full sm:w-64">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+              <input 
+                type="text" 
+                id="spotTrackSearchInput" 
+                placeholder="Filtrar canciones de la lista..." 
+                class="w-full pl-8 pr-3 py-1.5 bg-slate-950/80 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+              >
+            </div>
+          </div>
+
+          <div class="max-h-72 overflow-y-auto space-y-1.5 pr-1.5 custom-scrollbar" id="spotTracksList">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         3. DEDICATED HISTORY VIEW
+         ==================================================================== -->
+    <div id="viewHistory" class="hidden space-y-4 animate-fade-in">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-extrabold text-white flex items-center space-x-2">
+            <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+            <span>Historial de Descargas</span>
+          </h2>
+          <p class="text-xs text-slate-400">Archivos completados disponibles en tu equipo</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <div class="relative">
+            <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+            <input type="text" id="historySearchInput" placeholder="Buscar en historial..." class="pl-8 pr-3 py-1.5 bg-slate-900/90 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-48">
+          </div>
+          <button id="btnOpenDownloadsHist" class="px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-white/10 transition flex items-center space-x-1.5">
+            <i class="fa-solid fa-folder-open text-amber-400"></i>
+            <span>Abrir Carpeta</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="historyList" class="space-y-2.5">
+        <div id="emptyHistory" class="text-center py-16 text-slate-500 text-sm liquid-glass rounded-2xl">
+          <i class="fa-solid fa-inbox text-4xl mb-3 opacity-30 text-indigo-400"></i>
+          <p class="font-medium text-slate-400">Tu historial está vacío.</p>
+          <p class="text-xs text-slate-500 mt-1">Los videos o canciones descargadas aparecerán aquí.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         4. DEDICATED PRÓXIMAMENTE (COMING SOON) IN FROSTED GRAY LIQUID GLASS
+         ==================================================================== -->
+    <div id="viewComingSoon" class="hidden space-y-6 animate-fade-in">
+      <div class="liquid-glass liquid-glass-gray p-6 sm:p-8 space-y-5 shadow-2xl">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-slate-800 text-slate-300 flex items-center justify-center font-bold text-lg border border-slate-700 shadow">
+            <i class="fa-solid fa-shapes"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-base sm:text-lg font-extrabold text-slate-100">Próximas Aplicaciones & Módulos</h2>
+              <span class="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700 text-[10px] font-mono font-bold uppercase">
+                En Expansión
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">Nuevas plataformas multimedia que se integrarán próximamente a la suite</p>
+          </div>
+        </div>
+
+        <!-- Grid of Upcoming Gray Apps with Hover Color Burst -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 pt-2">
+          
+          <!-- Instagram Pro -->
+          <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
+            <div class="flex items-center justify-between">
+              <div class="app-logo-box logo-instagram w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg border border-slate-700">
+                <i class="fa-brands fa-instagram"></i>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-700">En desarrollo</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-white group-hover:text-pink-300 transition-colors">Instagram Pro Downloader</h3>
+              <p class="text-xs text-slate-400 mt-1">Descarga Reels, Historias y fotos en máxima resolución con audio original.</p>
+            </div>
+          </div>
+
+          <!-- TikTok No-Watermark -->
+          <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
+            <div class="flex items-center justify-between">
+              <div class="app-logo-box logo-tiktok w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg border border-slate-700">
+                <i class="fa-brands fa-tiktok"></i>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-700">En desarrollo</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-white group-hover:text-cyan-300 transition-colors">TikTok Clean HD</h3>
+              <p class="text-xs text-slate-400 mt-1">Extracción directa sin marcas de agua ni logos, en calidad HD nativa.</p>
+            </div>
+          </div>
+
+          <!-- SoundCloud & Deezer -->
+          <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
+            <div class="flex items-center justify-between">
+              <div class="app-logo-box logo-soundcloud w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg border border-slate-700">
+                <i class="fa-brands fa-soundcloud"></i>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-700">Planificado</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-white group-hover:text-amber-400 transition-colors">SoundCloud & Deezer Studio</h3>
+              <p class="text-xs text-slate-400 mt-1">Sets en vivo de DJs, pistas exclusivas y remezclas en formatos WAV y FLAC.</p>
+            </div>
+          </div>
+
+          <!-- X / Twitter Video -->
+          <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
+            <div class="flex items-center justify-between">
+              <div class="app-logo-box logo-twitter w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg border border-slate-700">
+                <i class="fa-brands fa-x-twitter"></i>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-700">Planificado</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-white group-hover:text-slate-200 transition-colors">X (Twitter) Media Saver</h3>
+              <p class="text-xs text-slate-400 mt-1">Guarda videos de publicaciones, hilos y GIFs en MP4 de forma instantánea.</p>
+            </div>
+          </div>
+
+          <!-- Cloud Storage Grabber -->
+          <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
+            <div class="flex items-center justify-between">
+              <div class="app-logo-box logo-drive w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg border border-slate-700">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-700">Planificado</span>
+            </div>
+            <div>
+              <h3 class="text-sm font-extrabold text-white group-hover:text-emerald-300 transition-colors">Cloud Media Grabber</h3>
+              <p class="text-xs text-slate-400 mt-1">Descarga lotes de Google Drive y Dropbox sin límites de cuota de visor.</p>
+            </div>
+          </div>
+
+          <!-- Suggest a Platform Card -->
+          <div class="liquid-card p-5 space-y-3 border border-dashed border-slate-700 flex flex-col justify-between group">
+            <div>
+              <div class="w-10 h-10 rounded-xl bg-slate-800 text-amber-400 flex items-center justify-center text-lg border border-slate-700">
+                <i class="fa-solid fa-lightbulb"></i>
+              </div>
+              <h3 class="text-sm font-extrabold text-white mt-2">¿Tienes una idea?</h3>
+              <p class="text-xs text-slate-400 mt-1">¿Qué otra plataforma te gustaría que integremos en próximas actualizaciones?</p>
+            </div>
+            <button onclick="showToast('¡Gracias! Tomamos en cuenta las sugerencias.', 'info')" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
+              Sugerir Plataforma
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         ACTIVE DOWNLOADS SECTION (ALWAYS VISIBLE WHEN JOBS ARE RUNNING)
+         ==================================================================== -->
+    <div id="activeDownloadsSection" class="hidden space-y-3 animate-slide-up">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xs font-extrabold text-slate-400 uppercase tracking-wider flex items-center space-x-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>Descargas en tiempo real</span>
+        </h3>
+      </div>
+
+      <div id="activeJobsList" class="space-y-3">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Bottom Directory Bar with Liquid Glass Effect -->
+  <footer class="border-t border-white/10 bg-slate-950/70 backdrop-blur-2xl py-3 px-4 text-xs z-30">
+    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
+      <div class="flex items-center space-x-2 truncate w-full sm:w-auto">
+        <i class="fa-solid fa-hard-drive text-indigo-400"></i>
+        <span class="text-slate-500">Guardando en:</span>
+        <span id="currentDownloadPath" class="font-mono text-slate-300 truncate max-w-xs sm:max-w-md bg-slate-900/80 px-2 py-0.5 rounded-lg border border-white/10">./downloads</span>
+      </div>
+      <div class="flex items-center space-x-3 flex-shrink-0 font-medium">
+        <button id="btnOpenFolder" class="hover:text-white transition flex items-center space-x-1.5 text-indigo-400 hover:underline">
+          <i class="fa-solid fa-folder-open text-amber-400"></i>
+          <span>Abrir carpeta</span>
+        </button>
+        <span class="text-slate-700">|</span>
+        <button id="btnChangeFolder" class="hover:text-white transition flex items-center space-x-1 text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-gear text-slate-400"></i>
+          <span>Cambiar ruta</span>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Modal for changing folder path -->
+  <div id="folderModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="liquid-glass border-slate-700/80 rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl animate-scale-in">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-folder-tree text-lg"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-extrabold text-white">Cambiar Carpeta de Destino</h3>
+          <p class="text-xs text-slate-400">Selecciona dónde se guardarán tus archivos</p>
+        </div>
+      </div>
+      
+      <div class="space-y-1.5">
+        <label class="text-xs font-semibold text-slate-300">Ruta absoluta en Windows:</label>
+        <input type="text" id="newFolderPathInput" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono">
+      </div>
+
+      <div class="flex justify-end space-x-2.5 pt-2">
+        <button id="btnCancelModal" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
+        <button id="btnSaveModal" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- In-App Floating Media Player Modal (100% Custom Liquid Glass Controls - Sin Barra Blanca) -->
+  <div id="mediaPlayerModal" class="fixed inset-0 bg-black/85 backdrop-blur-xl hidden items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="liquid-glass border-white/15 rounded-3xl max-w-3xl w-full p-5 sm:p-7 space-y-5 shadow-2xl animate-scale-in relative">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center space-x-3 overflow-hidden">
+          <div id="playerTypeIcon" class="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm flex-shrink-0 border border-indigo-500/30">
+            <i class="fa-solid fa-play"></i>
+          </div>
+          <div class="truncate">
+            <h3 id="playerModalTitle" class="text-sm sm:text-base font-extrabold text-white truncate">Reproduciendo Archivo</h3>
+            <p id="playerModalSubtitle" class="text-[11px] text-slate-400 font-mono">Archivo local</p>
+          </div>
+        </div>
+        <button id="btnClosePlayerModal" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Video Viewport (Sin Controles Nativos del Navegador) -->
+      <div id="playerVideoContainer" class="hidden rounded-2xl overflow-hidden bg-black shadow-inner aspect-video relative flex items-center justify-center group">
+        <video id="inAppVideo" class="w-full h-full max-h-[50vh] rounded-2xl object-contain"></video>
+      </div>
+
+      <!-- Audio Viewport Card -->
+      <div id="playerAudioContainer" class="hidden p-5 rounded-2xl bg-slate-950/80 border border-white/10 space-y-4">
+        <div class="flex items-center space-x-4">
+          <div class="w-20 h-20 rounded-2xl bg-slate-900 border border-white/10 overflow-hidden flex-shrink-0 shadow-xl relative">
+            <img id="playerAudioCover" src="" class="w-full h-full object-cover">
+          </div>
+          <div class="truncate flex-1 space-y-1">
+            <div id="playerAudioTitle" class="font-extrabold text-white text-base truncate">Título de la Canción</div>
+            <div id="playerAudioArtist" class="text-xs text-slate-400 truncate">Artista</div>
+            <div class="pt-1 flex items-center space-x-2">
+              <span class="sound-wave">
+                <span class="sound-bar"></span>
+                <span class="sound-bar"></span>
+                <span class="sound-bar"></span>
+                <span class="sound-bar"></span>
+              </span>
+              <span class="text-[11px] text-emerald-400 font-mono font-bold">Audio HD 320 kbps</span>
+            </div>
+          </div>
+        </div>
+        <!-- Hidden Audio Element Controlled Programmatically -->
+        <audio id="inAppAudio"></audio>
+      </div>
+
+      <!-- CUSTOM LIQUID GLASS CONTROLS BAR (Sin barra blanca nativa) -->
+      <div id="customPlayerControls" class="custom-player-bar p-3.5 space-y-2.5">
+        
+        <!-- Interactive Progress Scrubber Track -->
+        <div class="flex items-center space-x-3">
+          <span id="playerCurrentTime" class="text-[11px] font-mono text-slate-400 w-11 text-right">00:00</span>
+          
+          <div id="playerScrubberTrack" class="scrubber-track flex-1">
+            <div id="playerScrubberFill" class="scrubber-fill" style="width: 0%">
+              <div class="scrubber-thumb"></div>
+            </div>
+          </div>
+
+          <span id="playerDurationTime" class="text-[11px] font-mono text-slate-400 w-11">00:00</span>
+        </div>
+
+        <!-- Buttons Row -->
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center space-x-2">
+            <!-- Skip Backward 10s -->
+            <button id="btnPlayerRewind10" type="button" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition active:scale-90" title="Retroceder 10 segundos">
+              <i class="fa-solid fa-rotate-left text-xs"></i>
+            </button>
+
+            <!-- Main Play / Pause Button -->
+            <button id="btnPlayerPlayPause" type="button" class="w-10 h-10 rounded-2xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:opacity-95 text-white flex items-center justify-center text-sm shadow-lg shadow-indigo-600/30 transition active:scale-95" title="Reproducir / Pausar">
+              <i id="playerPlayPauseIcon" class="fa-solid fa-play ml-0.5"></i>
+            </button>
+
+            <!-- Skip Forward 10s -->
+            <button id="btnPlayerForward10" type="button" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition active:scale-90" title="Adelantar 10 segundos">
+              <i class="fa-solid fa-rotate-right text-xs"></i>
+            </button>
+          </div>
+
+          <!-- Volume & Fullscreen Controls -->
+          <div class="flex items-center space-x-3">
+            <!-- Volume Control -->
+            <div class="flex items-center space-x-2 bg-slate-900/60 px-2.5 py-1.5 rounded-xl border border-white/10">
+              <button id="btnPlayerMute" type="button" class="text-slate-400 hover:text-white text-xs transition">
+                <i id="playerVolumeIcon" class="fa-solid fa-volume-high"></i>
+              </button>
+              <input type="range" id="playerVolumeSlider" min="0" max="1" step="0.05" value="1" class="volume-range">
+            </div>
+
+            <!-- Picture in Picture (for video) -->
+            <button id="btnPlayerPiP" type="button" class="hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition active:scale-90" title="Picture in Picture">
+              <i class="fa-solid fa-clone text-xs"></i>
+            </button>
+
+            <!-- Fullscreen (for video) -->
+            <button id="btnPlayerFullscreen" type="button" class="hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition active:scale-90" title="Pantalla Completa">
+              <i class="fa-solid fa-expand text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Buttons Footer -->
+      <div class="flex items-center justify-between pt-1 text-xs">
+        <button id="btnPlayerOpenExternal" class="px-4 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white font-semibold transition flex items-center space-x-2">
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          <span>Abrir en reproductor de Windows</span>
+        </button>
+        <button id="btnPlayerCloseBottom" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer"></div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

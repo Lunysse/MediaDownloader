@@ -1,0 +1,502 @@
+/* ==========================================================================
+   MediaDownloader Ultra & Sylveader - iOS Liquid Glass & Cosmic Design System
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-main: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --yt-accent: #ff0033;
+  --yt-liquid-glow: rgba(255, 0, 51, 0.35);
+  
+  --spot-accent: #1ed760;
+  --spot-liquid-glow: rgba(30, 215, 96, 0.35);
+
+  --gray-liquid-glow: rgba(148, 163, 184, 0.25);
+  --glass-specular: rgba(255, 255, 255, 0.25);
+
+  /* Sylveon Pastel Palette */
+  --sylveon-pink: #f472b6;
+  --sylveon-pink-glow: rgba(244, 114, 182, 0.35);
+  --sylveon-blue: #38bdf8;
+  --sylveon-blue-glow: rgba(56, 189, 248, 0.35);
+  --sylveon-cream: #fff1f2;
+}
+
+body {
+  font-family: var(--font-main);
+  background: radial-gradient(circle at 50% 0%, #111728 0%, #060910 65%, #020306 100%);
+  color: #f8fafc;
+  overflow-x: hidden;
+  min-height: 100vh;
+  transition: background 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   Cosmic Space Canvas & Ambient Nebulas
+   ========================================================================== */
+#spaceStarsCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ambient-glow {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.ambient-yt {
+  top: -8%;
+  left: 15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(225, 29, 72, 0.28) 0%, rgba(190, 18, 60, 0.1) 60%, transparent 100%);
+  animation: floatOrb 14s ease-in-out infinite alternate;
+}
+
+.ambient-spotify {
+  bottom: 0%;
+  right: 15%;
+  width: 640px;
+  height: 640px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.28) 0%, rgba(5, 150, 105, 0.1) 60%, transparent 100%);
+  animation: floatOrb 18s ease-in-out infinite alternate-reverse;
+}
+
+.ambient-gray {
+  top: 25%;
+  left: 30%;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(148, 163, 184, 0.2) 0%, rgba(100, 116, 139, 0.06) 60%, transparent 100%);
+}
+
+@keyframes floatOrb {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(35px, -25px) scale(1.06); }
+  100% { transform: translate(-25px, 25px) scale(0.96); }
+}
+
+/* ==========================================================================
+   Apple iOS Liquid Glass Panels
+   ========================================================================== */
+.liquid-glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.02) 50%, rgba(15, 23, 42, 0.75) 100%);
+  backdrop-filter: blur(34px) saturate(190%);
+  -webkit-backdrop-filter: blur(34px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -1px 1px 0 rgba(0, 0, 0, 0.4),
+    0 24px 48px -12px rgba(0, 0, 0, 0.75);
+  border-radius: 28px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-glass-yt {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.12) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(15, 23, 42, 0.8) 100%);
+  border-color: rgba(244, 63, 94, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.3),
+    0 24px 48px -12px rgba(0, 0, 0, 0.75),
+    0 0 35px -8px var(--yt-liquid-glow);
+}
+
+.liquid-glass-spot {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(15, 23, 42, 0.8) 100%);
+  border-color: rgba(16, 185, 129, 0.25);
+  border-top-color: rgba(255, 255, 255, 0.35);
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.3),
+    0 24px 48px -12px rgba(0, 0, 0, 0.75),
+    0 0 35px -8px var(--spot-liquid-glow);
+}
+
+.liquid-glass-gray {
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.12) 0%, rgba(255, 255, 255, 0.03) 50%, rgba(15, 23, 42, 0.75) 100%);
+  border-color: rgba(148, 163, 184, 0.2);
+  border-top-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.2),
+    0 20px 40px -12px rgba(0, 0, 0, 0.65);
+}
+
+.liquid-card {
+  background: rgba(30, 41, 59, 0.45);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 20px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-card:hover {
+  background: rgba(40, 53, 75, 0.65);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.55);
+}
+
+/* ==========================================================================
+   Lunysse Static Glass Badge
+   ========================================================================== */
+#badgeLunysse {
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.15) 0%, rgba(56, 189, 248, 0.12) 100%);
+  border: 1px solid rgba(244, 114, 182, 0.35);
+  box-shadow: 0 0 14px -2px rgba(244, 114, 182, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#badgeLunysse:hover {
+  border-color: rgba(244, 114, 182, 0.55);
+  box-shadow: 0 0 20px 0 rgba(244, 114, 182, 0.35);
+}
+
+/* ==========================================================================
+   Próximamente App Hover Logo Color Burst & Specular Shine
+   ========================================================================== */
+.app-logo-box {
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: grayscale(100%);
+  opacity: 0.7;
+}
+
+.liquid-card:hover .app-logo-box {
+  filter: grayscale(0%);
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Brand specific hover styles */
+.liquid-card:hover .logo-instagram {
+  background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(225, 48, 108, 0.6);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.liquid-card:hover .logo-tiktok {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 2px 2px 14px rgba(0, 242, 254, 0.7), -2px -2px 14px rgba(254, 9, 121, 0.7);
+  border-color: rgba(0, 242, 254, 0.4);
+}
+
+.liquid-card:hover .logo-soundcloud {
+  background: #ff5500;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(255, 85, 0, 0.6);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.liquid-card:hover .logo-twitter {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.liquid-card:hover .logo-drive {
+  background: #ffffff;
+  color: #00ac47;
+  box-shadow: 0 0 20px rgba(0, 172, 71, 0.5);
+  border-color: rgba(255, 186, 0, 0.6);
+}
+
+/* ==========================================================================
+   Custom Integrated Liquid Glass Media Player Controls
+   ========================================================================== */
+.custom-player-bar {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 22px;
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.7), inset 0 1px 1px rgba(255, 255, 255, 0.25);
+}
+
+/* Custom Interactive Scrubber / Seek Bar */
+.scrubber-track {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  cursor: pointer;
+  position: relative;
+  transition: height 0.2s ease;
+}
+
+.scrubber-track:hover {
+  height: 9px;
+}
+
+.scrubber-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #6366f1 0%, #ec4899 50%, #10b981 100%);
+  position: relative;
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.5);
+}
+
+.scrubber-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  position: absolute;
+  right: -7px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+.scrubber-track:hover .scrubber-thumb {
+  transform: translateY(-50%) scale(1);
+}
+
+/* Custom Volume Slider */
+.volume-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 70px;
+  height: 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+}
+
+/* Sliding Tab Indicator with iOS Capsule Feel */
+.tab-indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  border-radius: 14px;
+  transition: all 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 1;
+}
+
+.tab-btn {
+  position: relative;
+  z-index: 2;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tab-btn.active {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+/* Quality Chips */
+.quality-chip {
+  cursor: pointer;
+  border-radius: 18px;
+  transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(12px);
+  user-select: none;
+}
+
+.quality-chip:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(30, 41, 59, 0.85);
+  box-shadow: 0 8px 20px -3px rgba(0, 0, 0, 0.45);
+}
+
+.quality-chip.selected-yt {
+  border-color: #f43f5e;
+  border-top-color: #fda4af;
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.25) 0%, rgba(30, 41, 59, 0.9) 100%);
+  box-shadow: 0 0 24px -2px var(--yt-liquid-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+.quality-chip.selected-spot {
+  border-color: #10b981;
+  border-top-color: #6ee7b7;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(30, 41, 59, 0.9) 100%);
+  box-shadow: 0 0 24px -2px var(--spot-liquid-glow), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: scale(1.02);
+}
+
+/* Concurrency Segmented Selector Pill */
+.concurrency-btn.active {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.32);
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* Animations */
+.animate-fade-in {
+  animation: fadeIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Skeleton Loading Shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+  border-radius: 14px;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Sound Wave Animation */
+.sound-wave {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2.5px;
+  height: 14px;
+}
+.sound-bar {
+  width: 3px;
+  background-color: #10b981;
+  border-radius: 2px;
+  animation: wave 0.9s ease-in-out infinite alternate;
+}
+.sound-bar:nth-child(1) { height: 35%; animation-delay: 0.1s; }
+.sound-bar:nth-child(2) { height: 95%; animation-delay: 0.3s; }
+.sound-bar:nth-child(3) { height: 60%; animation-delay: 0.15s; }
+.sound-bar:nth-child(4) { height: 100%; animation-delay: 0.4s; }
+
+@keyframes wave {
+  0% { height: 20%; }
+  100% { height: 100%; }
+}
+
+/* Toast */
+#toastContainer {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 320px;
+  max-width: 440px;
+  padding: 13px 20px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-top: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 16px 36px -6px rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: toastSlideIn 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transition: all 0.3s ease;
+}
+
+.toast.toast-hide {
+  opacity: 0;
+  transform: translateX(35px) scale(0.9);
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(45px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.7);
+  border-radius: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.9);
+}
