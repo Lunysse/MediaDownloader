@@ -869,11 +869,11 @@
       <div class="flex items-center justify-between border-b border-white/10 pb-3 flex-shrink-0">
         <div class="flex items-center space-x-3">
           <div class="w-10 h-10 rounded-2xl bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold text-lg border border-pink-500/30">
-            <i class="fa-solid fa-heart"></i>
+            <i class="fa-solid fa-lock"></i>
           </div>
           <div>
-            <h3 class="text-base font-extrabold text-white">Buzón Privado de Sugerencias</h3>
-            <p class="text-xs text-slate-400">Recomendaciones de tus visitantes y usuarios</p>
+            <h3 class="text-base font-extrabold text-white">Buzón de Sugerencias</h3>
+            <p class="text-xs text-slate-400">Panel administrativo privado</p>
           </div>
         </div>
         <button id="btnCloseAdminModal" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center text-xs">
@@ -881,16 +881,51 @@
         </button>
       </div>
 
-      <div id="adminSuggestionsList" class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1 min-h-[160px]">
-        <div class="text-center py-12 text-slate-500 text-xs">Cargando recomendaciones...</div>
+      <!-- Password Lock Section (Oculta la clave y la pide con puntitos) -->
+      <div id="adminAuthSection" class="p-6 text-center space-y-4 my-auto">
+        <div class="w-12 h-12 rounded-2xl bg-slate-900 border border-white/10 mx-auto flex items-center justify-center text-rose-400 shadow-inner">
+          <i class="fa-solid fa-shield-halved text-xl"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-extrabold text-white">Ingresa tu clave de acceso</h4>
+          <p class="text-xs text-slate-400 mt-0.5">Introduce tu clave para desbloquear las recomendaciones</p>
+        </div>
+        <form id="adminAuthForm" class="max-w-xs mx-auto space-y-3">
+          <input 
+            type="password" 
+            id="adminKeyInput" 
+            placeholder="••••••••••••" 
+            autocomplete="current-password"
+            class="w-full bg-slate-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white text-center tracking-widest focus:outline-none focus:border-pink-500 transition font-mono"
+          >
+          <div id="adminAuthError" class="hidden text-rose-400 text-xs font-semibold">
+            <i class="fa-solid fa-circle-exclamation mr-1"></i>Clave incorrecta
+          </div>
+          <button type="submit" id="btnUnlockAdmin" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:opacity-95 text-white font-bold text-xs shadow-lg shadow-pink-500/20 transition active:scale-95 flex items-center justify-center space-x-2">
+            <i class="fa-solid fa-key text-[11px]"></i>
+            <span>Desbloquear Buzón</span>
+          </button>
+        </form>
       </div>
 
-      <div class="flex items-center justify-between pt-2 border-t border-white/10 flex-shrink-0 text-xs text-slate-400">
-        <span id="adminSuggestionsCount">0 sugerencias recibidas</span>
-        <button id="btnRefreshSuggestions" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition flex items-center space-x-1.5">
-          <i class="fa-solid fa-rotate-right text-xs"></i>
-          <span>Actualizar</span>
-        </button>
+      <!-- Content Section (Solo visible una vez desbloqueado con la clave correcta) -->
+      <div id="adminContentSection" class="hidden flex-1 overflow-hidden flex-col space-y-3">
+        <div id="adminSuggestionsList" class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1 min-h-[160px]">
+          <div class="text-center py-12 text-slate-500 text-xs">Cargando recomendaciones...</div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-white/10 flex-shrink-0 text-xs text-slate-400">
+          <span id="adminSuggestionsCount">0 sugerencias recibidas</span>
+          <div class="flex items-center space-x-2">
+            <button id="btnRefreshSuggestions" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition flex items-center space-x-1.5">
+              <i class="fa-solid fa-rotate-right text-xs"></i>
+              <span>Actualizar</span>
+            </button>
+            <button id="btnLogoutAdmin" class="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 font-semibold border border-rose-500/20 transition text-xs">
+              Salir
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

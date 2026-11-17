@@ -131,6 +131,12 @@ const btnCloseAdminModal = document.getElementById('btnCloseAdminModal');
 const adminSuggestionsList = document.getElementById('adminSuggestionsList');
 const adminSuggestionsCount = document.getElementById('adminSuggestionsCount');
 const btnRefreshSuggestions = document.getElementById('btnRefreshSuggestions');
+const adminAuthSection = document.getElementById('adminAuthSection');
+const adminContentSection = document.getElementById('adminContentSection');
+const adminAuthForm = document.getElementById('adminAuthForm');
+const adminKeyInput = document.getElementById('adminKeyInput');
+const adminAuthError = document.getElementById('adminAuthError');
+const btnLogoutAdmin = document.getElementById('btnLogoutAdmin');
 const toastContainer = document.getElementById('toastContainer');
 
 // Global Engine Handles
@@ -1539,14 +1545,32 @@ function initSuggestionsSystem() {
 // ==========================================================================
 let lunysseAdminKey = sessionStorage.getItem('lunysse_admin_key') || '';
 
+function showAdminAuthView(errorMsg = '') {
+  if (adminAuthSection) adminAuthSection.classList.remove('hidden');
+  if (adminContentSection) {
+    adminContentSection.classList.add('hidden');
+    adminContentSection.classList.remove('flex');
+  }
+  if (adminAuthError) {
+    if (errorMsg) {
+      adminAuthError.innerHTML = `<i class="fa-solid fa-circle-exclamation mr-1"></i>${errorMsg}`;
+      adminAuthError.classList.remove('hidden');
+    } else {
+      adminAuthError.classList.add('hidden');
+    }
+  }
+  if (adminKeyInput) {
+    adminKeyInput.value = '';
+    setTimeout(() => adminKeyInput.focus(), 150);
+  }
+}
+
 async function loadAdminSuggestions() {
   if (!adminSuggestionsList) return;
 
   if (!lunysseAdminKey) {
-    const input = prompt('Ingresa la clave de administrador para ver las recomendaciones (por defecto: lunysse2026):');
-    if (!input) return;
-    lunysseAdminKey = input.trim();
-    sessionStorage.setItem('lunysse_admin_key', lunysseAdminKey);
+    showAdminAuthView();
+    return;
   }
 
   adminSuggestionsList.innerHTML = '<div class="text-center py-10 text-slate-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando sugerencias...</div>';
@@ -1565,8 +1589,15 @@ async function loadAdminSuggestions() {
     if (!res.ok) {
       sessionStorage.removeItem('lunysse_admin_key');
       lunysseAdminKey = '';
-      adminSuggestionsList.innerHTML = `<div class="text-center py-10 text-rose-400 text-xs font-semibold"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>${data.error || 'Clave incorrecta'}</div>`;
+      showAdminAuthView(data.error || 'Clave incorrecta');
       return;
+    }
+
+    // Acceso concedido: Mostrar panel de sugerencias
+    if (adminAuthSection) adminAuthSection.classList.add('hidden');
+    if (adminContentSection) {
+      adminContentSection.classList.remove('hidden');
+      adminContentSection.classList.add('flex');
     }
 
     const list = data.suggestions || [];
@@ -1613,7 +1644,12 @@ function openAdminModal() {
   if (!adminSuggestionsModal) return;
   adminSuggestionsModal.classList.remove('hidden');
   adminSuggestionsModal.classList.add('flex');
-  loadAdminSuggestions();
+
+  if (lunysseAdminKey) {
+    loadAdminSuggestions();
+  } else {
+    showAdminAuthView();
+  }
 }
 
 function initAdminSuggestionsViewer() {
@@ -1629,6 +1665,29 @@ function initAdminSuggestionsViewer() {
     if (e.target === adminSuggestionsModal) closeAdminModal();
   });
   if (btnRefreshSuggestions) btnRefreshSuggestions.addEventListener('click', loadAdminSuggestions);
+
+  // Formulario para ingresar la clave con puntitos ocultos
+  if (adminAuthForm) {
+    adminAuthForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const enteredKey = adminKeyInput ? adminKeyInput.value.trim() : '';
+      if (!enteredKey) return;
+
+      lunysseAdminKey = enteredKey;
+      sessionStorage.setItem('lunysse_admin_key', lunysseAdminKey);
+      await loadAdminSuggestions();
+    });
+  }
+
+  // Cerrar sesión
+  if (btnLogoutAdmin) {
+    btnLogoutAdmin.addEventListener('click', () => {
+      lunysseAdminKey = '';
+      sessionStorage.removeItem('lunysse_admin_key');
+      showAdminAuthView();
+      showToast('Sesión cerrada con éxito', 'info');
+    });
+  }
 
   // Truco secreto: 5 clics rápidos en el badge Lunysse abren el buzón privado
   if (badgeLunysse) {
