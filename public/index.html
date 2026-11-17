@@ -73,16 +73,14 @@
         </div>
       </div>
 
-      <!-- Quick Action Shortcuts -->
+      <!-- Quick Action Shortcuts: Reloj y Fecha Local del Usuario -->
       <div class="flex items-center space-x-2.5">
-        <span class="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] font-mono font-bold">
-          <i class="fa-solid fa-shield-halved text-xs"></i>
-          <span>127.0.0.1 Aislado</span>
-        </span>
-        <button id="btnOpenDownloadsTop" title="Abrir carpeta de descargas en el Explorador de Windows" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-white/10 shadow-sm transition active:scale-95 group">
-          <i class="fa-solid fa-folder-open text-amber-400 group-hover:scale-110 transition-transform"></i>
-          <span>Carpeta</span>
-        </button>
+        <div id="localTimeBadge" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-900/80 border border-white/10 text-xs text-slate-300 font-mono shadow-sm">
+          <i class="fa-regular fa-clock text-rose-400 text-xs"></i>
+          <span id="localTimeText" class="font-bold text-white tracking-wide">--:--:--</span>
+          <span class="text-slate-600">•</span>
+          <span id="localDateText" class="text-slate-400 text-[11px]">--/--/----</span>
+        </div>
       </div>
     </div>
   </header>
@@ -112,7 +110,6 @@
         <button id="tabComingSoon" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200 transition">
           <i class="fa-solid fa-shapes text-slate-400"></i>
           <span>Próximamente</span>
-          <span class="px-1.5 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[9px] uppercase tracking-wider font-extrabold border border-slate-700">Gris</span>
         </button>
       </div>
     </div>
@@ -522,10 +519,6 @@
             <i class="fa-solid fa-search absolute left-3 top-2.5 text-slate-500 text-xs"></i>
             <input type="text" id="historySearchInput" placeholder="Buscar en historial..." class="pl-8 pr-3 py-1.5 bg-slate-900/90 border border-white/10 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 w-48">
           </div>
-          <button id="btnOpenDownloadsHist" class="px-3.5 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 text-xs font-semibold border border-white/10 transition flex items-center space-x-1.5">
-            <i class="fa-solid fa-folder-open text-amber-400"></i>
-            <span>Abrir Carpeta</span>
-          </button>
         </div>
       </div>
 
@@ -640,8 +633,9 @@
               <h3 class="text-sm font-extrabold text-white mt-2">¿Tienes una idea?</h3>
               <p class="text-xs text-slate-400 mt-1">¿Qué otra plataforma te gustaría que integremos en próximas actualizaciones?</p>
             </div>
-            <button onclick="showToast('¡Gracias! Tomamos en cuenta las sugerencias.', 'info')" class="w-full py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold transition">
-              Sugerir Plataforma
+            <button id="btnOpenSuggestModal" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-pink-500/20 to-indigo-500/20 hover:from-amber-500/30 hover:to-indigo-500/30 text-amber-300 hover:text-white border border-amber-500/30 text-xs font-bold transition flex items-center justify-center space-x-2 active:scale-95 shadow-sm">
+              <i class="fa-solid fa-comment-dots text-amber-400 text-xs"></i>
+              <span>Sugerir Plataforma</span>
             </button>
           </div>
 
@@ -667,52 +661,14 @@
 
   </main>
 
-  <!-- Bottom Directory Bar with Liquid Glass Effect -->
-  <footer class="border-t border-white/10 bg-slate-950/70 backdrop-blur-2xl py-3 px-4 text-xs z-30">
-    <div class="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-slate-400">
-      <div class="flex items-center space-x-2 truncate w-full sm:w-auto">
-        <i class="fa-solid fa-hard-drive text-indigo-400"></i>
-        <span class="text-slate-500">Guardando en:</span>
-        <span id="currentDownloadPath" class="font-mono text-slate-300 truncate max-w-xs sm:max-w-md bg-slate-900/80 px-2 py-0.5 rounded-lg border border-white/10">./downloads</span>
-      </div>
-      <div class="flex items-center space-x-3 flex-shrink-0 font-medium">
-        <button id="btnOpenFolder" class="hover:text-white transition flex items-center space-x-1.5 text-indigo-400 hover:underline">
-          <i class="fa-solid fa-folder-open text-amber-400"></i>
-          <span>Abrir carpeta</span>
-        </button>
-        <span class="text-slate-700">|</span>
-        <button id="btnChangeFolder" class="hover:text-white transition flex items-center space-x-1 text-slate-400 hover:text-slate-200">
-          <i class="fa-solid fa-gear text-slate-400"></i>
-          <span>Cambiar ruta</span>
-        </button>
+  <!-- Bottom Liquid Glass Footer -->
+  <footer class="border-t border-white/10 bg-slate-950/70 backdrop-blur-2xl py-4 px-4 text-xs z-30">
+    <div class="max-w-5xl mx-auto flex items-center justify-center text-center">
+      <div class="inline-flex items-center px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/25 text-pink-200 font-medium backdrop-blur-md shadow-sm shadow-pink-500/10">
+        <span class="text-xs tracking-wide">¡Si tienes dudas por favor hazmelo saber!</span>
       </div>
     </div>
   </footer>
-
-  <!-- Modal for changing folder path -->
-  <div id="folderModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 z-50 animate-fade-in">
-    <div class="liquid-glass border-slate-700/80 rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl animate-scale-in">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-400 flex items-center justify-center font-bold">
-          <i class="fa-solid fa-folder-tree text-lg"></i>
-        </div>
-        <div>
-          <h3 class="text-base font-extrabold text-white">Cambiar Carpeta de Destino</h3>
-          <p class="text-xs text-slate-400">Selecciona dónde se guardarán tus archivos</p>
-        </div>
-      </div>
-      
-      <div class="space-y-1.5">
-        <label class="text-xs font-semibold text-slate-300">Ruta absoluta en Windows:</label>
-        <input type="text" id="newFolderPathInput" class="w-full bg-slate-950 border border-white/10 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono">
-      </div>
-
-      <div class="flex justify-end space-x-2.5 pt-2">
-        <button id="btnCancelModal" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">Cancelar</button>
-        <button id="btnSaveModal" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/30 transition">Guardar Cambios</button>
-      </div>
-    </div>
-  </div>
 
   <!-- In-App Floating Media Player Modal (100% Custom Liquid Glass Controls - Sin Barra Blanca) -->
   <div id="mediaPlayerModal" class="fixed inset-0 bg-black/85 backdrop-blur-xl hidden items-center justify-center p-4 z-50 animate-fade-in">
@@ -833,6 +789,109 @@
         </button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- Suggestion Modal (Recuadro emergente para sugerir plataformas) -->
+  <div id="suggestionModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="liquid-glass border-white/15 rounded-3xl max-w-md w-full p-6 sm:p-7 space-y-4 shadow-2xl animate-scale-in relative">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg border border-amber-500/30">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white">Sugerir una Plataforma</h3>
+            <p class="text-xs text-slate-400">¿Qué te gustaría ver en la próxima versión?</p>
+          </div>
+        </div>
+        <button id="btnCloseSuggestModal" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="suggestionForm" class="space-y-3.5">
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-slate-300">Tu nombre o alias <span class="text-slate-500 font-normal">(opcional)</span>:</label>
+          <input 
+            type="text" 
+            id="suggestNameInput" 
+            placeholder="ej. Alex o anónimo..." 
+            maxlength="80" 
+            class="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition font-medium"
+          >
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-slate-300">Tu contacto <span class="text-slate-500 font-normal">(opcional, ej. Instagram o correo)</span>:</label>
+          <input 
+            type="text" 
+            id="suggestContactInput" 
+            placeholder="@usuario o tu correo..." 
+            maxlength="120" 
+            class="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition font-medium"
+          >
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[11px] font-semibold text-slate-300">Tu recomendación o idea <span class="text-pink-400 font-bold">*</span>:</label>
+          <textarea 
+            id="suggestMessageInput" 
+            required 
+            rows="3" 
+            placeholder="¿Qué plataforma, formato o mejora te gustaría que agreguemos?..." 
+            maxlength="1000" 
+            class="w-full bg-slate-950/80 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition resize-none font-medium"
+          ></textarea>
+        </div>
+
+        <div id="suggestSuccessAlert" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center space-x-2 animate-fade-in">
+          <i class="fa-solid fa-heart text-pink-400"></i>
+          <span>¡Muchas gracias! Tu recomendación ha sido enviada con éxito.</span>
+        </div>
+
+        <div class="flex justify-end space-x-2.5 pt-1">
+          <button type="button" id="btnCancelSuggest" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-300 transition">
+            Cancelar
+          </button>
+          <button type="submit" id="btnSubmitSuggest" class="px-5 py-2 rounded-xl text-xs font-extrabold bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-500 hover:opacity-95 text-white shadow-lg shadow-rose-500/20 transition active:scale-95 flex items-center space-x-2">
+            <i class="fa-solid fa-paper-plane text-[10px]"></i>
+            <span>Enviar Recomendación</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Suggestions Viewer Modal (Privado para Lunysse) -->
+  <div id="adminSuggestionsModal" class="fixed inset-0 bg-black/85 backdrop-blur-md hidden items-center justify-center p-4 z-50 animate-fade-in">
+    <div class="liquid-glass border-white/15 rounded-3xl max-w-2xl w-full p-6 sm:p-7 space-y-4 shadow-2xl animate-scale-in max-h-[85vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3 flex-shrink-0">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-2xl bg-pink-500/20 text-pink-400 flex items-center justify-center font-bold text-lg border border-pink-500/30">
+            <i class="fa-solid fa-heart"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-white">Buzón Privado de Sugerencias</h3>
+            <p class="text-xs text-slate-400">Recomendaciones de tus visitantes y usuarios</p>
+          </div>
+        </div>
+        <button id="btnCloseAdminModal" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center text-xs">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div id="adminSuggestionsList" class="flex-1 overflow-y-auto space-y-3 custom-scrollbar pr-1 min-h-[160px]">
+        <div class="text-center py-12 text-slate-500 text-xs">Cargando recomendaciones...</div>
+      </div>
+
+      <div class="flex items-center justify-between pt-2 border-t border-white/10 flex-shrink-0 text-xs text-slate-400">
+        <span id="adminSuggestionsCount">0 sugerencias recibidas</span>
+        <button id="btnRefreshSuggestions" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-rotate-right text-xs"></i>
+          <span>Actualizar</span>
+        </button>
+      </div>
     </div>
   </div>
 

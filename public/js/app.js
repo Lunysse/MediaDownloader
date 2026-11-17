@@ -112,16 +112,25 @@ const btnPlayerCloseBottom = document.getElementById('btnPlayerCloseBottom');
 const btnPlayerOpenExternal = document.getElementById('btnPlayerOpenExternal');
 let currentModalFilePath = '';
 
-// Footer & Config
-const currentDownloadPath = document.getElementById('currentDownloadPath');
-const btnOpenFolder = document.getElementById('btnOpenFolder');
-const btnOpenDownloadsTop = document.getElementById('btnOpenDownloadsTop');
-const btnOpenDownloadsHist = document.getElementById('btnOpenDownloadsHist');
-const btnChangeFolder = document.getElementById('btnChangeFolder');
-const folderModal = document.getElementById('folderModal');
-const newFolderPathInput = document.getElementById('newFolderPathInput');
-const btnCancelModal = document.getElementById('btnCancelModal');
-const btnSaveModal = document.getElementById('btnSaveModal');
+// Suggestion & Admin Modals
+const btnOpenSuggestModal = document.getElementById('btnOpenSuggestModal');
+const suggestionModal = document.getElementById('suggestionModal');
+const btnCloseSuggestModal = document.getElementById('btnCloseSuggestModal');
+const btnCancelSuggest = document.getElementById('btnCancelSuggest');
+const suggestionForm = document.getElementById('suggestionForm');
+const suggestNameInput = document.getElementById('suggestNameInput');
+const suggestContactInput = document.getElementById('suggestContactInput');
+const suggestMessageInput = document.getElementById('suggestMessageInput');
+const suggestSuccessAlert = document.getElementById('suggestSuccessAlert');
+const btnSubmitSuggest = document.getElementById('btnSubmitSuggest');
+
+// Admin Suggestions Modal (Lunysse Private)
+const badgeLunysse = document.getElementById('badgeLunysse');
+const adminSuggestionsModal = document.getElementById('adminSuggestionsModal');
+const btnCloseAdminModal = document.getElementById('btnCloseAdminModal');
+const adminSuggestionsList = document.getElementById('adminSuggestionsList');
+const adminSuggestionsCount = document.getElementById('adminSuggestionsCount');
+const btnRefreshSuggestions = document.getElementById('btnRefreshSuggestions');
 const toastContainer = document.getElementById('toastContainer');
 
 // Global Engine Handles
@@ -518,7 +527,6 @@ function initWebSocket() {
       if (msg.type === 'init') {
         historyItems = msg.history || [];
         appConfig = msg.config || {};
-        updateConfigUI();
         renderHistory();
         updateHistoryBadge();
         updateConcurrencyUI(appConfig.maxConcurrent || 2);
@@ -1337,10 +1345,6 @@ function renderActiveJobs() {
             <i class="fa-solid fa-download text-[11px]"></i>
             <span>Guardar en dispositivo</span>
           </a>
-          <button onclick="openInFolder('${encodeURIComponent(job.filePath)}')" class="px-3.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-white/10 text-xs font-bold transition flex items-center space-x-1.5 active:scale-95">
-            <i class="fa-solid fa-folder-open text-amber-400 text-[11px]"></i>
-            <span>Ver en carpeta</span>
-          </button>
         </div>
       ` : ''}
     `;
@@ -1404,9 +1408,6 @@ function renderHistory() {
         <button onclick="playFile('${encodeURIComponent(item.filePath)}', '${encodeURIComponent(item.title || '')}', '${encodeURIComponent(item.artist || '')}', '${encodeURIComponent(item.cover || '')}')" title="Reproducir en la app" class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-emerald-600 text-slate-300 hover:text-white transition flex items-center justify-center text-xs active:scale-95 shadow">
           <i class="fa-solid fa-play ml-0.5"></i>
         </button>
-        <button onclick="openInFolder('${encodeURIComponent(item.filePath)}')" title="Ver en carpeta" class="w-8 h-8 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center text-xs active:scale-95 shadow">
-          <i class="fa-solid fa-folder-open text-amber-400"></i>
-        </button>
       </div>
     `;
 
@@ -1418,77 +1419,226 @@ if (historySearchInput) {
   historySearchInput.addEventListener('input', renderHistory);
 }
 
-// Global open folder
-window.openInFolder = async (encodedPath) => {
-  const filePath = decodeURIComponent(encodedPath);
-  try {
-    await fetch('/api/open-folder', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: filePath })
-    });
-    showToast('Abriendo carpeta en el Explorador...', 'info');
-  } catch (err) {
-    showToast('No se pudo abrir la carpeta.', 'error');
-  }
-};
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
-[btnOpenFolder, btnOpenDownloadsTop, btnOpenDownloadsHist].forEach(btn => {
-  if (btn) {
-    btn.addEventListener('click', async () => {
+// ==========================================================================
+// 1. Reloj y Fecha Local del Usuario
+// ==========================================================================
+function initLocalClock() {
+  const timeEl = document.getElementById('localTimeText');
+  const dateEl = document.getElementById('localDateText');
+  if (!timeEl || !dateEl) return;
+
+  function update() {
+    const now = new Date();
+    timeEl.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    dateEl.textContent = now.toLocaleDateString(undefined, {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+  }
+
+  update();
+  setInterval(update, 1000);
+}
+
+// ==========================================================================
+// 2. Sistema de Sugerencias de Plataforma (Recuadro Emergente)
+// ==========================================================================
+function initSuggestionsSystem() {
+  if (!btnOpenSuggestModal || !suggestionModal) return;
+
+  btnOpenSuggestModal.addEventListener('click', () => {
+    suggestionModal.classList.remove('hidden');
+    suggestionModal.classList.add('flex');
+    if (suggestMessageInput) suggestMessageInput.focus();
+  });
+
+  const closeModal = () => {
+    suggestionModal.classList.add('hidden');
+    suggestionModal.classList.remove('flex');
+    if (suggestSuccessAlert) suggestSuccessAlert.classList.add('hidden');
+  };
+
+  if (btnCloseSuggestModal) btnCloseSuggestModal.addEventListener('click', closeModal);
+  if (btnCancelSuggest) btnCancelSuggest.addEventListener('click', closeModal);
+
+  suggestionModal.addEventListener('click', (e) => {
+    if (e.target === suggestionModal) closeModal();
+  });
+
+  if (suggestionForm) {
+    suggestionForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = suggestMessageInput ? suggestMessageInput.value.trim() : '';
+      if (!message) {
+        showToast('Por favor escribe tu sugerencia.', 'error');
+        return;
+      }
+
+      const name = suggestNameInput ? suggestNameInput.value.trim() : '';
+      const contact = suggestContactInput ? suggestContactInput.value.trim() : '';
+
+      if (btnSubmitSuggest) {
+        btnSubmitSuggest.disabled = true;
+        btnSubmitSuggest.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i><span>Enviando...</span>';
+      }
+
       try {
-        await fetch('/api/open-folder', {
+        const res = await fetch('/api/suggestions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: appConfig.downloadDir })
+          body: JSON.stringify({ name, contact, message })
         });
-        showToast('Carpeta de descargas abierta', 'info');
-      } catch (e) {
-        showToast('No se pudo abrir la carpeta.', 'error');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al enviar');
+
+        if (suggestSuccessAlert) suggestSuccessAlert.classList.remove('hidden');
+        showToast('¡Recomendación enviada con éxito!', 'success');
+
+        if (suggestionForm) suggestionForm.reset();
+
+        setTimeout(() => {
+          closeModal();
+          if (btnSubmitSuggest) {
+            btnSubmitSuggest.disabled = false;
+            btnSubmitSuggest.innerHTML = '<i class="fa-solid fa-paper-plane text-[10px]"></i><span>Enviar Recomendación</span>';
+          }
+        }, 2200);
+
+      } catch (err) {
+        showToast(`Fallo al enviar: ${err.message}`, 'error');
+        if (btnSubmitSuggest) {
+          btnSubmitSuggest.disabled = false;
+          btnSubmitSuggest.innerHTML = '<i class="fa-solid fa-paper-plane text-[10px]"></i><span>Enviar Recomendación</span>';
+        }
       }
     });
   }
-});
+}
 
-function updateConfigUI() {
-  if (appConfig.downloadDir) {
-    currentDownloadPath.textContent = appConfig.downloadDir;
-    newFolderPathInput.value = appConfig.downloadDir;
+// ==========================================================================
+// 3. Buzón Privado de Sugerencias para Lunysse
+// ==========================================================================
+let lunysseAdminKey = sessionStorage.getItem('lunysse_admin_key') || '';
+
+async function loadAdminSuggestions() {
+  if (!adminSuggestionsList) return;
+
+  if (!lunysseAdminKey) {
+    const input = prompt('Ingresa la clave de administrador para ver las recomendaciones (por defecto: lunysse2026):');
+    if (!input) return;
+    lunysseAdminKey = input.trim();
+    sessionStorage.setItem('lunysse_admin_key', lunysseAdminKey);
+  }
+
+  adminSuggestionsList.innerHTML = '<div class="text-center py-10 text-slate-400 text-xs"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando sugerencias...</div>';
+
+  try {
+    const res = await fetch(`/api/suggestions?key=${encodeURIComponent(lunysseAdminKey)}`);
+    const data = await res.json();
+
+    if (!res.ok) {
+      sessionStorage.removeItem('lunysse_admin_key');
+      lunysseAdminKey = '';
+      adminSuggestionsList.innerHTML = `<div class="text-center py-10 text-rose-400 text-xs font-semibold"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>${data.error || 'Clave incorrecta'}</div>`;
+      return;
+    }
+
+    const list = data.suggestions || [];
+    if (adminSuggestionsCount) {
+      adminSuggestionsCount.textContent = `${list.length} ${list.length === 1 ? 'sugerencia recibida' : 'sugerencias recibidas'}`;
+    }
+
+    if (list.length === 0) {
+      adminSuggestionsList.innerHTML = `
+        <div class="text-center py-12 text-slate-500 text-xs space-y-2">
+          <i class="fa-solid fa-inbox text-3xl opacity-30 text-pink-400"></i>
+          <p class="font-medium text-slate-400">Aún no hay recomendaciones.</p>
+          <p class="text-slate-600 text-[11px]">Cuando los visitantes sugieran plataformas aparecerán aquí de forma privada.</p>
+        </div>
+      `;
+      return;
+    }
+
+    adminSuggestionsList.innerHTML = '';
+    list.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'liquid-card p-4 rounded-2xl border border-white/10 space-y-2 text-left';
+      const dateStr = new Date(item.timestamp).toLocaleString();
+
+      card.innerHTML = `
+        <div class="flex items-center justify-between text-xs">
+          <div class="flex items-center space-x-2">
+            <span class="font-bold text-white">${escapeHtml(item.name || 'Anónimo')}</span>
+            ${item.contact ? `<span class="text-pink-300 font-mono text-[10px] bg-pink-500/10 px-2 py-0.5 rounded-full border border-pink-500/20">${escapeHtml(item.contact)}</span>` : ''}
+          </div>
+          <span class="text-slate-500 font-mono text-[10px]">${dateStr}</span>
+        </div>
+        <p class="text-xs text-slate-200 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-white/5 font-sans">${escapeHtml(item.message)}</p>
+      `;
+      adminSuggestionsList.appendChild(card);
+    });
+
+  } catch (err) {
+    adminSuggestionsList.innerHTML = `<div class="text-center py-10 text-rose-400 text-xs font-semibold">Error al cargar: ${err.message}</div>`;
   }
 }
 
-btnChangeFolder.addEventListener('click', () => {
-  folderModal.classList.remove('hidden');
-  folderModal.classList.add('flex');
-});
+function openAdminModal() {
+  if (!adminSuggestionsModal) return;
+  adminSuggestionsModal.classList.remove('hidden');
+  adminSuggestionsModal.classList.add('flex');
+  loadAdminSuggestions();
+}
 
-btnCancelModal.addEventListener('click', () => {
-  folderModal.classList.add('hidden');
-  folderModal.classList.remove('flex');
-});
+function initAdminSuggestionsViewer() {
+  if (!adminSuggestionsModal) return;
 
-btnSaveModal.addEventListener('click', async () => {
-  const newPath = newFolderPathInput.value.trim();
-  if (!newPath) return;
+  const closeAdminModal = () => {
+    adminSuggestionsModal.classList.add('hidden');
+    adminSuggestionsModal.classList.remove('flex');
+  };
 
-  try {
-    const res = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ downloadDir: newPath })
+  if (btnCloseAdminModal) btnCloseAdminModal.addEventListener('click', closeAdminModal);
+  adminSuggestionsModal.addEventListener('click', (e) => {
+    if (e.target === adminSuggestionsModal) closeAdminModal();
+  });
+  if (btnRefreshSuggestions) btnRefreshSuggestions.addEventListener('click', loadAdminSuggestions);
+
+  // Truco secreto: 5 clics rápidos en el badge Lunysse abren el buzón privado
+  if (badgeLunysse) {
+    let clickCount = 0;
+    let clickTimer = null;
+    badgeLunysse.style.cursor = 'pointer';
+    badgeLunysse.title = 'Lunysse Edition';
+    badgeLunysse.addEventListener('click', () => {
+      clickCount++;
+      clearTimeout(clickTimer);
+      if (clickCount >= 5) {
+        clickCount = 0;
+        openAdminModal();
+      } else {
+        clickTimer = setTimeout(() => { clickCount = 0; }, 1800);
+      }
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error);
-
-    appConfig = data.config;
-    updateConfigUI();
-    folderModal.classList.add('hidden');
-    folderModal.classList.remove('flex');
-    showToast('Ruta de descarga actualizada con éxito', 'success');
-  } catch (err) {
-    showToast(`Error: ${err.message}`, 'error');
   }
-});
+
+  // También se puede abrir con la URL ?admin=lunysse o #admin
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('admin') === 'lunysse' || window.location.hash === '#admin') {
+    setTimeout(openAdminModal, 500);
+  }
+}
 
 // Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
@@ -1505,6 +1655,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize Canvas & Custom Player Engines
   spaceStarsEngine = new SpaceStarsEngine('spaceStarsCanvas');
   customPlayerController = new CustomMediaPlayerController();
+
+  // Initialize Local Clock, Suggestions & Admin Viewer
+  initLocalClock();
+  initSuggestionsSystem();
+  initAdminSuggestionsViewer();
 
   // Set initial ambient & starlight
   updateAmbientForTab('youtube');
