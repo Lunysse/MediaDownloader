@@ -34,6 +34,9 @@
   <!-- Dynamic Ambient Glow Refractions -->
   <div id="ambientYt" class="ambient-glow ambient-yt"></div>
   <div id="ambientSpot" class="ambient-glow ambient-spotify"></div>
+  <div id="ambientTwitter" class="ambient-glow ambient-twitter opacity-0"></div>
+  <div id="ambientFb" class="ambient-glow ambient-fb opacity-0"></div>
+  <div id="ambientGif" class="ambient-glow ambient-gif opacity-0"></div>
   <div id="ambientGray" class="ambient-glow ambient-gray opacity-0"></div>
 
   <!-- Audio Player for 30s Spotify Previews -->
@@ -85,7 +88,6 @@
     </div>
   </header>
 
-  <!-- Main Content Area -->
   <main class="max-w-5xl mx-auto px-4 py-7 flex-1 w-full space-y-6 z-10">
 
     <!-- Sliding Segmented Tab Navigation (Liquid Glass Capsule) -->
@@ -94,20 +96,32 @@
         <!-- Moving Capsule Indicator -->
         <div id="tabIndicator" class="tab-indicator bg-white/10 shadow-lg border border-white/20 backdrop-blur-md"></div>
         
-        <button id="tabYoutube" class="tab-btn active flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white transition">
+        <button id="tabYoutube" class="tab-btn active flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-white transition flex-shrink-0">
           <i class="fa-brands fa-youtube text-base text-rose-500"></i>
           <span>YouTube</span>
         </button>
-        <button id="tabSpotify" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition">
+        <button id="tabSpotify" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition flex-shrink-0">
           <i class="fa-brands fa-spotify text-base text-emerald-400"></i>
           <span>Spotify</span>
         </button>
-        <button id="tabHistory" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition">
+        <button id="tabTwitter" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition flex-shrink-0">
+          <i class="fa-brands fa-x-twitter text-base text-slate-200"></i>
+          <span>X (Twitter)</span>
+        </button>
+        <button id="tabFacebook" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition flex-shrink-0">
+          <i class="fa-brands fa-facebook text-base text-[#1877F2]"></i>
+          <span>Facebook</span>
+        </button>
+        <button id="tabGifConverter" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-amber-300 transition flex-shrink-0">
+          <i class="fa-solid fa-wand-magic-sparkles text-base text-amber-400"></i>
+          <span>Convertir a GIF</span>
+        </button>
+        <button id="tabHistory" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-white transition flex-shrink-0">
           <i class="fa-solid fa-clock-rotate-left text-base text-indigo-400"></i>
           <span>Historial</span>
           <span id="historyBadgeCount" class="hidden ml-1 px-1.5 py-0.2 rounded-full bg-indigo-500/20 text-indigo-300 text-[10px] font-mono border border-indigo-500/30">0</span>
         </button>
-        <button id="tabComingSoon" class="tab-btn flex items-center space-x-2 px-5 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200 transition">
+        <button id="tabComingSoon" class="tab-btn flex items-center space-x-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold text-slate-400 hover:text-slate-200 transition flex-shrink-0">
           <i class="fa-solid fa-shapes text-slate-400"></i>
           <span>Próximamente</span>
         </button>
@@ -291,11 +305,15 @@
               </div>
             </div>
 
-            <!-- Action Button -->
-            <div class="pt-2">
-              <button id="btnDownloadYt" class="w-full sm:w-auto px-9 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:opacity-95 text-white shadow-xl shadow-rose-600/30 flex items-center justify-center space-x-2.5 transition active:scale-95">
+            <!-- Action Buttons -->
+            <div class="pt-2 flex flex-wrap items-center gap-3">
+              <button id="btnDownloadYt" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-rose-600 via-rose-500 to-rose-600 hover:opacity-95 text-white shadow-xl shadow-rose-600/30 flex items-center justify-center space-x-2.5 transition active:scale-95">
                 <i class="fa-solid fa-download"></i>
                 <span id="btnDownloadYtText">Descargar Ahora (MP4)</span>
+              </button>
+              <button id="btnDownloadYtThumb" type="button" class="w-full sm:w-auto px-5 py-3.5 rounded-2xl font-bold text-xs bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-white/10 shadow-lg flex items-center justify-center space-x-2 transition active:scale-95 group" title="Descargar la miniatura oficial en máxima resolución original (HD)">
+                <i class="fa-solid fa-image text-rose-400 group-hover:scale-110 transition-transform"></i>
+                <span>Descargar Miniatura HD</span>
               </button>
             </div>
           </div>
@@ -502,7 +520,520 @@
     </div>
 
     <!-- ====================================================================
-         3. DEDICATED HISTORY VIEW
+         3. DEDICATED X (TWITTER) INTERFACE VIEW
+         ==================================================================== -->
+    <div id="viewTwitter" class="hidden space-y-6 animate-fade-in">
+      
+      <!-- Twitter Liquid Glass Banner & Input Box -->
+      <div class="liquid-glass liquid-glass-twitter p-6 sm:p-8 space-y-4 shadow-2xl transition-all">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-slate-900 border border-white/20 text-white flex items-center justify-center font-bold text-xl shadow-lg">
+              <i class="fa-brands fa-x-twitter"></i>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-white">X (Twitter) Media Studio</h2>
+              <p class="text-xs text-slate-300/80">Videos en máxima resolución (1080p), extracción de audio y GIFs animados</p>
+            </div>
+          </div>
+          <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-white/10 text-slate-200 border border-white/20 font-mono hidden sm:inline-block">
+            MP4 • GIF • MP3 • 1080p
+          </span>
+        </div>
+
+        <!-- Input Bar for Twitter -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <div class="relative flex-1 group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-brands fa-x-twitter text-base"></i>
+            </div>
+            <input 
+              type="text" 
+              id="urlInputTwitter" 
+              placeholder="Pega enlace de X o Twitter (ej. https://x.com/usuario/status/...)..."
+              class="w-full pl-11 pr-28 py-4 bg-slate-950/80 border border-white/10 rounded-2xl text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-white focus:ring-4 focus:ring-white/10 text-white transition-all shadow-inner font-medium"
+              autocomplete="off"
+            >
+            <div class="absolute right-2.5 top-2.5 bottom-2.5 flex items-center space-x-1.5">
+              <button id="btnClearTwitter" class="hidden p-2 text-slate-400 hover:text-white transition" title="Limpiar">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+              <button id="btnPasteTwitter" class="px-3 py-1.5 flex items-center space-x-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-white/10 transition active:scale-95">
+                <i class="fa-solid fa-paste text-slate-300"></i>
+                <span>Pegar</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="btnAnalyzeTwitter" class="px-8 py-4 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 hover:from-slate-700 hover:to-slate-600 text-white border border-white/20 shadow-xl transition active:scale-95 flex-shrink-0">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Analizar Tweet</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+          <span class="text-slate-500 text-[11px]">Soporta publicaciones con video, hilos y animaciones GIF de X</span>
+          <span class="text-slate-500 font-mono text-[11px]">Conversión automática de loops a .gif</span>
+        </div>
+      </div>
+
+      <!-- Skeleton Loader for Twitter -->
+      <div id="skeletonTwitter" class="hidden liquid-glass p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="skeleton w-full md:w-80 h-44 rounded-2xl"></div>
+          <div class="flex-1 space-y-4">
+            <div class="skeleton w-28 h-6 rounded-full"></div>
+            <div class="skeleton w-3/4 h-8 rounded-xl"></div>
+            <div class="skeleton w-1/2 h-5 rounded-lg"></div>
+            <div class="grid grid-cols-3 gap-3 pt-3">
+              <div class="skeleton h-14 rounded-2xl"></div>
+              <div class="skeleton h-14 rounded-2xl"></div>
+              <div class="skeleton h-14 rounded-2xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Twitter Result Card -->
+      <div id="twitterCard" class="hidden liquid-glass liquid-glass-twitter p-6 sm:p-8 space-y-6 animate-slide-up shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Thumbnail / Media Preview -->
+          <div class="relative w-full md:w-80 h-48 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border border-white/10 group shadow-2xl self-center md:self-start">
+            <img id="twitterThumbnail" src="" alt="Vista previa de X" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+            <div id="twitterDuration" class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 text-white text-xs font-mono font-bold backdrop-blur-md border border-white/10 shadow">
+              0:00
+            </div>
+            <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-slate-900 border border-white/20 text-white text-[11px] font-black tracking-wide uppercase flex items-center space-x-1.5 shadow-lg">
+              <i class="fa-brands fa-x-twitter"></i>
+              <span id="twitterTypeBadge">Video</span>
+            </div>
+          </div>
+
+          <!-- Tweet Details & Mode Select -->
+          <div class="flex-1 space-y-5">
+            <div>
+              <h2 id="twitterTitle" class="text-base sm:text-lg font-extrabold text-white line-clamp-3 leading-tight">
+                Texto de la publicación
+              </h2>
+              <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-400">
+                <span id="twitterUploader" class="text-slate-300 font-semibold flex items-center space-x-1.5">
+                  <i class="fa-solid fa-circle-user text-slate-400"></i>
+                  <span id="twitterUploaderText">@usuario</span>
+                </span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-400 font-mono text-[11px]">X Media</span>
+              </div>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-sliders text-slate-300"></i>
+                <span>Formato de Salida</span>
+              </label>
+              <div class="grid grid-cols-3 gap-2.5 max-w-md">
+                <button type="button" id="btnModeTwitterVideo" class="quality-chip selected-yt p-3 text-left">
+                  <div class="text-xs font-extrabold text-white flex items-center space-x-1.5">
+                    <i class="fa-solid fa-video text-slate-300 text-xs"></i>
+                    <span>Video (MP4)</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">Máxima calidad HD</div>
+                </button>
+
+                <button type="button" id="btnModeTwitterAudio" class="quality-chip p-3 text-left">
+                  <div class="text-xs font-extrabold text-white flex items-center space-x-1.5">
+                    <i class="fa-solid fa-music text-indigo-400 text-xs"></i>
+                    <span>Solo Audio</span>
+                  </div>
+                  <div class="text-[10px] text-slate-400 mt-0.5">MP3 / 320 kbps</div>
+                </button>
+
+                <button type="button" id="btnModeTwitterGif" class="quality-chip p-3 text-left">
+                  <div class="text-xs font-extrabold text-white flex items-center space-x-1.5">
+                    <i class="fa-solid fa-file-image text-amber-400 text-xs"></i>
+                    <span>GIF Animado</span>
+                  </div>
+                  <div class="text-[10px] text-amber-300/80 mt-0.5">Loop (.gif nativo)</div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Video Quality Chips Grid -->
+            <div id="twitterVideoChipsSection" class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-display text-slate-400"></i>
+                <span>Resolución Disponible</span>
+              </label>
+              <div id="twitterQualityChipsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- SPECIAL DIRECT GIF BOX -->
+            <div id="twitterDirectGifBox" class="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-xs font-bold text-amber-300">
+                  <i class="fa-solid fa-link"></i>
+                  <span>Enlace Directo del GIF (Reproduce en cualquier sitio)</span>
+                </div>
+                <span class="text-[10px] text-amber-200/60 font-mono">video.twimg.com</span>
+              </div>
+              <p class="text-[11px] text-slate-300">
+                A diferencia del enlace de la publicación, este link apunta directamente al archivo multimedia para reproducirlo en Discord, WhatsApp o cualquier chat sin abrir X:
+              </p>
+              <div class="flex items-center space-x-2">
+                <input 
+                  type="text" 
+                  id="twitterDirectUrlInput" 
+                  readonly 
+                  class="flex-1 bg-slate-950/80 border border-white/10 rounded-xl px-3 py-2 text-xs font-mono text-amber-200 truncate select-all focus:outline-none"
+                >
+                <button id="btnCopyTwitterDirectUrl" type="button" class="px-4 py-2 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 text-xs font-bold transition flex items-center space-x-1.5 active:scale-95 flex-shrink-0">
+                  <i class="fa-solid fa-copy text-xs"></i>
+                  <span>Copiar Link Directo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pt-2 flex flex-wrap items-center gap-3">
+              <button id="btnDownloadTwitter" class="w-full sm:w-auto px-8 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-slate-100 via-white to-slate-200 text-slate-950 hover:opacity-95 shadow-xl shadow-white/10 flex items-center justify-center space-x-2.5 transition active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span id="btnDownloadTwitterText">Descargar Ahora (MP4)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         4. DEDICATED FACEBOOK INTERFACE VIEW
+         ==================================================================== -->
+    <div id="viewFacebook" class="hidden space-y-6 animate-fade-in">
+      
+      <!-- Facebook Liquid Glass Banner & Input Box -->
+      <div class="liquid-glass liquid-glass-fb p-6 sm:p-8 space-y-4 shadow-2xl transition-all">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#1877F2]/20 text-[#1877F2] flex items-center justify-center font-bold text-xl border border-[#1877F2]/30 shadow-lg shadow-blue-500/20">
+              <i class="fa-brands fa-facebook"></i>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-white">Facebook Video & Reels Downloader</h2>
+              <p class="text-xs text-blue-200/70">Videos de Facebook en alta definición (1080p/720p HD), Reels y audio MP3</p>
+            </div>
+          </div>
+          <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-[#1877F2]/20 text-blue-300 border border-[#1877F2]/30 font-mono hidden sm:inline-block">
+            HD 1080p • REELS • MP4
+          </span>
+        </div>
+
+        <!-- Input Bar for Facebook -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <div class="relative flex-1 group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-[#1877F2]">
+              <i class="fa-brands fa-facebook text-base"></i>
+            </div>
+            <input 
+              type="text" 
+              id="urlInputFacebook" 
+              placeholder="Pega enlace de Facebook (Video, Reel, Watch o publicación)..."
+              class="w-full pl-11 pr-28 py-4 bg-slate-950/80 border border-white/10 rounded-2xl text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-[#1877F2] focus:ring-4 focus:ring-blue-500/15 text-white transition-all shadow-inner font-medium"
+              autocomplete="off"
+            >
+            <div class="absolute right-2.5 top-2.5 bottom-2.5 flex items-center space-x-1.5">
+              <button id="btnClearFacebook" class="hidden p-2 text-slate-400 hover:text-white transition" title="Limpiar">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+              <button id="btnPasteFacebook" class="px-3 py-1.5 flex items-center space-x-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-white/10 transition active:scale-95">
+                <i class="fa-solid fa-paste text-blue-400"></i>
+                <span>Pegar</span>
+              </button>
+            </div>
+          </div>
+
+          <button id="btnAnalyzeFacebook" class="px-8 py-4 rounded-2xl font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-600 via-[#1877F2] to-blue-600 hover:opacity-95 text-white shadow-xl shadow-blue-600/30 transition active:scale-95 flex-shrink-0">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <span>Analizar Video</span>
+          </button>
+        </div>
+
+        <div class="flex items-center justify-between text-xs text-slate-400 pt-1">
+          <span class="text-slate-500 text-[11px]">Compatible con videos públicos, reels y transmisiones finalizadas</span>
+          <span class="text-slate-500 font-mono text-[11px]">Máxima resolución HD automática</span>
+        </div>
+      </div>
+
+      <!-- Skeleton Loader for Facebook -->
+      <div id="skeletonFacebook" class="hidden liquid-glass p-6 sm:p-8 space-y-6 animate-fade-in">
+        <div class="flex flex-col md:flex-row gap-6">
+          <div class="skeleton w-full md:w-80 h-44 rounded-2xl"></div>
+          <div class="flex-1 space-y-4">
+            <div class="skeleton w-28 h-6 rounded-full"></div>
+            <div class="skeleton w-3/4 h-8 rounded-xl"></div>
+            <div class="skeleton w-1/2 h-5 rounded-lg"></div>
+            <div class="grid grid-cols-2 gap-3 pt-3">
+              <div class="skeleton h-14 rounded-2xl"></div>
+              <div class="skeleton h-14 rounded-2xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Facebook Result Card -->
+      <div id="facebookCard" class="hidden liquid-glass liquid-glass-fb p-6 sm:p-8 space-y-6 animate-slide-up shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-6">
+          <!-- Thumbnail -->
+          <div class="relative w-full md:w-80 h-48 rounded-2xl overflow-hidden bg-slate-950 flex-shrink-0 border border-white/10 group shadow-2xl self-center md:self-start">
+            <img id="facebookThumbnail" src="" alt="Miniatura de Facebook" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+            <div id="facebookDuration" class="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-black/80 text-white text-xs font-mono font-bold backdrop-blur-md border border-white/10 shadow">
+              0:00
+            </div>
+            <div class="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-[#1877F2] text-white text-[11px] font-black tracking-wide uppercase flex items-center space-x-1.5 shadow-lg">
+              <i class="fa-brands fa-facebook"></i>
+              <span>Facebook</span>
+            </div>
+          </div>
+
+          <!-- Video Details & Mode Select -->
+          <div class="flex-1 space-y-5">
+            <div>
+              <h2 id="facebookTitle" class="text-base sm:text-lg font-extrabold text-white line-clamp-3 leading-tight">
+                Título del video de Facebook
+              </h2>
+              <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-400">
+                <span id="facebookUploader" class="text-slate-300 font-semibold flex items-center space-x-1.5">
+                  <i class="fa-solid fa-circle-user text-blue-400"></i>
+                  <span id="facebookUploaderText">Página o Usuario</span>
+                </span>
+                <span class="text-slate-600">•</span>
+                <span class="text-slate-400 font-mono text-[11px]">Facebook Watch / Reels</span>
+              </div>
+            </div>
+
+            <!-- Mode Switcher -->
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-sliders text-blue-400"></i>
+                <span>Tipo de Formato</span>
+              </label>
+              <div class="grid grid-cols-2 gap-3 max-w-md">
+                <button type="button" id="btnModeFacebookVideo" class="quality-chip selected-yt p-3.5 flex items-center space-x-3 text-left">
+                  <div class="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-sm">
+                    <i class="fa-solid fa-video"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-extrabold text-white">Video (MP4)</div>
+                    <div class="text-[11px] text-slate-400">Máxima resolución HD</div>
+                  </div>
+                </button>
+
+                <button type="button" id="btnModeFacebookAudio" class="quality-chip p-3.5 flex items-center space-x-3 text-left">
+                  <div class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
+                    <i class="fa-solid fa-music"></i>
+                  </div>
+                  <div>
+                    <div class="text-xs font-extrabold text-white">Solo Audio</div>
+                    <div class="text-[11px] text-slate-400">MP3 320 kbps</div>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <!-- Video Quality Chips Grid -->
+            <div id="facebookVideoChipsSection" class="space-y-2">
+              <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
+                <i class="fa-solid fa-display text-slate-400"></i>
+                <span>Resolución del Video</span>
+              </label>
+              <div id="facebookQualityChipsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="pt-2">
+              <button id="btnDownloadFacebook" class="w-full sm:w-auto px-9 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-blue-600 via-[#1877F2] to-blue-600 hover:opacity-95 text-white shadow-xl shadow-blue-600/30 flex items-center justify-center space-x-2.5 transition active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span id="btnDownloadFacebookText">Descargar Ahora (MP4 HD)</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         5. DEDICATED CONVERTIR A GIF STUDIO VIEW
+         ==================================================================== -->
+    <div id="viewGifConverter" class="hidden space-y-6 animate-fade-in">
+      
+      <!-- GIF Studio Liquid Glass Banner -->
+      <div class="liquid-glass liquid-glass-gif p-6 sm:p-8 space-y-5 shadow-2xl transition-all">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-rose-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-amber-500/20">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <div>
+              <h2 class="text-base sm:text-lg font-extrabold text-white">Conversor Universal de Video a GIF</h2>
+              <p class="text-xs text-amber-200/80">Convierte videos locales o enlaces de publicaciones a GIFs de alta fidelidad</p>
+            </div>
+          </div>
+          <span class="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 font-mono hidden sm:inline-block">
+            PALETTEGEN • 256 COLORES
+          </span>
+        </div>
+
+        <!-- Input Source Tabs (Subir archivo o Enlace) -->
+        <div class="flex items-center space-x-2 p-1 bg-slate-950/70 rounded-2xl border border-white/10 max-w-md">
+          <button type="button" id="btnGifTabUpload" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-white/15 text-white shadow">
+            <i class="fa-solid fa-file-video text-amber-400"></i>
+            <span>Subir Video Local</span>
+          </button>
+          <button type="button" id="btnGifTabUrl" class="flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-link text-indigo-400"></i>
+            <span>Desde Enlace Web</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Local File Drag & Drop Zone -->
+        <div id="gifUploadSection" class="space-y-3">
+          <div id="gifDropzone" class="border-2 border-dashed border-amber-500/30 hover:border-amber-400/60 rounded-3xl p-8 sm:p-10 text-center transition-all cursor-pointer bg-slate-950/40 hover:bg-slate-950/60 group">
+            <input type="file" id="gifFileInput" accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/*" class="hidden">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center mx-auto text-2xl group-hover:scale-110 transition-transform">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <h3 class="text-sm font-extrabold text-white mt-3.5">Arrastra y suelta tu video aquí o haz clic para examinar</h3>
+            <p class="text-xs text-slate-400 mt-1">Formatos compatibles: MP4, WebM, MOV, MKV (Hasta 150 MB)</p>
+            <div id="gifSelectedFileInfo" class="hidden mt-3 inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-mono font-bold animate-fade-in">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span id="gifSelectedFileName">video.mp4</span>
+              <span class="text-emerald-500">•</span>
+              <span id="gifSelectedFileSize">0 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Web URL Input -->
+        <div id="gifUrlSection" class="hidden space-y-3">
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-amber-400">
+              <i class="fa-solid fa-link text-base"></i>
+            </div>
+            <input 
+              type="text" 
+              id="gifUrlInput" 
+              placeholder="Pega enlace del video a convertir (ej. tweet de X, YouTube, etc.)..."
+              class="w-full pl-11 pr-24 py-4 bg-slate-950/80 border border-white/10 rounded-2xl text-xs sm:text-sm placeholder-slate-500 focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-500/15 text-white transition-all font-medium"
+              autocomplete="off"
+            >
+            <button id="btnPasteGifUrl" type="button" class="absolute right-2.5 top-2.5 bottom-2.5 px-3 py-1.5 flex items-center space-x-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-white/10 transition active:scale-95">
+              <i class="fa-solid fa-paste text-amber-400"></i>
+              <span>Pegar</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Quality & Time Controls -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          <!-- GIF Quality Selector -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+              <i class="fa-solid fa-palette text-amber-400"></i>
+              <span>Calidad y Resolución del GIF</span>
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" class="gif-quality-btn p-3 rounded-2xl text-left border border-white/10 bg-slate-950/60 hover:border-amber-400/40 transition" data-quality="high">
+                <div class="text-xs font-extrabold text-white flex items-center space-x-1">
+                  <span>🌟 Alta</span>
+                </div>
+                <div class="text-[10px] text-amber-300 font-semibold mt-0.5">600px • 20 fps</div>
+              </button>
+
+              <button type="button" class="gif-quality-btn selected-yt p-3 rounded-2xl text-left border border-amber-500/50 bg-amber-500/10 transition" data-quality="medium">
+                <div class="text-xs font-extrabold text-white flex items-center space-x-1">
+                  <span>⚡ Estándar</span>
+                </div>
+                <div class="text-[10px] text-emerald-400 font-semibold mt-0.5">480px • 15 fps</div>
+              </button>
+
+              <button type="button" class="gif-quality-btn p-3 rounded-2xl text-left border border-white/10 bg-slate-950/60 hover:border-amber-400/40 transition" data-quality="light">
+                <div class="text-xs font-extrabold text-white flex items-center space-x-1">
+                  <span>🪶 Ligera</span>
+                </div>
+                <div class="text-[10px] text-slate-400 font-semibold mt-0.5">320px • 12 fps</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Time Trimming Controls -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+              <i class="fa-solid fa-stopwatch text-indigo-400"></i>
+              <span>Recorte de Tiempo (Opcional)</span>
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1">
+                <span class="text-[11px] text-slate-400">Segundo de Inicio:</span>
+                <input type="text" id="gifStartTimeInput" value="00:00:00" placeholder="00:00:00" class="w-full bg-slate-950/90 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400 text-center">
+              </div>
+              <div class="space-y-1">
+                <span class="text-[11px] text-slate-400">Duración máx:</span>
+                <div class="flex items-center space-x-2">
+                  <input type="number" id="gifDurationInput" value="10" min="1" max="60" class="w-full bg-slate-950/90 border border-white/10 rounded-xl px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-400 text-center">
+                  <span class="text-xs text-slate-400 font-mono">seg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Start Conversion Button -->
+        <div class="pt-2">
+          <button id="btnStartGifConvert" type="button" class="w-full sm:w-auto px-9 py-3.5 rounded-2xl font-extrabold text-sm bg-gradient-to-r from-amber-500 via-rose-500 to-indigo-600 hover:opacity-95 text-white shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2.5 transition active:scale-95">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Generar GIF Animado</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Card for GIF Converter -->
+      <div id="gifResultCard" class="hidden liquid-glass liquid-glass-gif p-6 sm:p-8 space-y-5 animate-slide-up shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-6 items-center">
+          <div class="relative max-w-sm rounded-2xl overflow-hidden bg-slate-950 border border-white/10 shadow-2xl">
+            <img id="gifResultPreview" src="" alt="GIF Resultante" class="w-full h-auto object-contain max-h-72">
+          </div>
+          <div class="flex-1 space-y-4 text-center md:text-left">
+            <div>
+              <div class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-mono font-bold">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>¡Conversión Exitosa!</span>
+              </div>
+              <h3 id="gifResultTitle" class="text-base font-extrabold text-white mt-2">Animación GIF lista</h3>
+              <p id="gifResultDetails" class="text-xs text-slate-400 mt-1 font-mono">Paleta optimizada 256 colores</p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-1">
+              <a id="btnDownloadGeneratedGif" href="" download class="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:opacity-95 text-white font-extrabold text-xs shadow-lg flex items-center space-x-2 transition active:scale-95">
+                <i class="fa-solid fa-download"></i>
+                <span>Guardar GIF (.gif)</span>
+              </a>
+              <button id="btnCopyGeneratedGifUrl" type="button" class="px-5 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/10 font-bold text-xs transition flex items-center space-x-2 active:scale-95">
+                <i class="fa-solid fa-link text-amber-400"></i>
+                <span>Copiar Enlace Directo</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ====================================================================
+         6. DEDICATED HISTORY VIEW
          ==================================================================== -->
     <div id="viewHistory" class="hidden space-y-4 animate-fade-in">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -532,7 +1063,7 @@
     </div>
 
     <!-- ====================================================================
-         4. DEDICATED PRÓXIMAMENTE (COMING SOON) IN FROSTED GRAY LIQUID GLASS
+         7. DEDICATED PRÓXIMAMENTE (COMING SOON) IN FROSTED GRAY LIQUID GLASS
          ==================================================================== -->
     <div id="viewComingSoon" class="hidden space-y-6 animate-fade-in">
       <div class="liquid-glass liquid-glass-gray p-6 sm:p-8 space-y-5 shadow-2xl">
@@ -596,20 +1127,6 @@
             </div>
           </div>
 
-          <!-- X / Twitter Video -->
-          <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
-            <div class="flex items-center justify-between">
-              <div class="app-logo-box logo-twitter w-10 h-10 rounded-xl bg-slate-800 text-slate-300 flex items-center justify-center text-lg border border-slate-700">
-                <i class="fa-brands fa-x-twitter"></i>
-              </div>
-              <span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-700">Planificado</span>
-            </div>
-            <div>
-              <h3 class="text-sm font-extrabold text-white group-hover:text-slate-200 transition-colors">X (Twitter) Media Saver</h3>
-              <p class="text-xs text-slate-400 mt-1">Guarda videos de publicaciones, hilos y GIFs en MP4 de forma instantánea.</p>
-            </div>
-          </div>
-
           <!-- Cloud Storage Grabber -->
           <div class="liquid-card p-5 space-y-3 border border-slate-700/60 group cursor-pointer">
             <div class="flex items-center justify-between">
@@ -661,7 +1178,7 @@
 
   </main>
 
-  <!-- Bottom Liquid Glass Footer -->
+
   <footer class="border-t border-white/10 bg-slate-950/70 backdrop-blur-2xl py-4 px-4 text-xs z-30">
     <div class="max-w-5xl mx-auto flex items-center justify-center text-center">
       <div class="inline-flex items-center px-4 py-1.5 rounded-full bg-pink-500/10 border border-pink-500/25 text-pink-200 font-medium backdrop-blur-md shadow-sm shadow-pink-500/10">
@@ -928,7 +1445,7 @@
         </div>
       </div>
     </div>
-  </div>
+
 
   <!-- Toast Notification Container -->
   <div id="toastContainer"></div>

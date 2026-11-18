@@ -15,12 +15,16 @@ const JobStatus = Object.freeze({
 
 const MediaPlatform = Object.freeze({
   YOUTUBE: 'youtube',
-  SPOTIFY: 'spotify'
+  SPOTIFY: 'spotify',
+  TWITTER: 'twitter',
+  FACEBOOK: 'facebook',
+  GIF: 'gif'
 });
 
 const DownloadMode = Object.freeze({
   VIDEO: 'video',
-  AUDIO: 'audio'
+  AUDIO: 'audio',
+  GIF: 'gif'
 });
 
 const AllowedAudioFormats = Object.freeze(['mp3', 'm4a', 'flac', 'wav']);
@@ -107,11 +111,98 @@ function validateSpotifyDownloadRequest(body) {
   }
 }
 
+/**
+ * Valida la estructura de una solicitud de descarga de X (Twitter)
+ */
+function validateTwitterDownloadRequest(body) {
+  if (!body || typeof body !== 'object') {
+    throw new Error('Cuerpo de la petición inválido.');
+  }
+
+  const { url, mode, quality, audioFormat, asGif } = body;
+  if (!url || typeof url !== 'string') {
+    throw new Error('El campo "url" es obligatorio y debe ser una cadena.');
+  }
+
+  let normalizedMode = DownloadMode.VIDEO;
+  if (mode === DownloadMode.AUDIO) normalizedMode = DownloadMode.AUDIO;
+  else if (mode === DownloadMode.GIF || asGif === true) normalizedMode = DownloadMode.GIF;
+
+  const normalizedFormat = AllowedAudioFormats.includes(audioFormat) ? audioFormat : 'mp3';
+  const cleanQuality = quality ? String(quality).trim() : 'best';
+
+  return {
+    url: url.trim(),
+    mode: normalizedMode,
+    quality: cleanQuality,
+    audioFormat: normalizedFormat,
+    asGif: normalizedMode === DownloadMode.GIF,
+    title: body.title ? String(body.title).substring(0, 250) : undefined,
+    thumbnail: body.thumbnail ? String(body.thumbnail) : undefined,
+    outputDir: body.outputDir ? String(body.outputDir) : undefined
+  };
+}
+
+/**
+ * Valida la estructura de una solicitud de descarga de Facebook
+ */
+function validateFacebookDownloadRequest(body) {
+  if (!body || typeof body !== 'object') {
+    throw new Error('Cuerpo de la petición inválido.');
+  }
+
+  const { url, mode, quality, audioFormat } = body;
+  if (!url || typeof url !== 'string') {
+    throw new Error('El campo "url" es obligatorio y debe ser una cadena.');
+  }
+
+  const normalizedMode = mode === DownloadMode.AUDIO ? DownloadMode.AUDIO : DownloadMode.VIDEO;
+  const normalizedFormat = AllowedAudioFormats.includes(audioFormat) ? audioFormat : 'mp3';
+  const cleanQuality = quality ? String(quality).trim() : 'best';
+
+  return {
+    url: url.trim(),
+    mode: normalizedMode,
+    quality: cleanQuality,
+    audioFormat: normalizedFormat,
+    title: body.title ? String(body.title).substring(0, 250) : undefined,
+    thumbnail: body.thumbnail ? String(body.thumbnail) : undefined,
+    outputDir: body.outputDir ? String(body.outputDir) : undefined
+  };
+}
+
+/**
+ * Valida la estructura de una solicitud de conversión de video a GIF
+ */
+function validateGifConversionRequest(body) {
+  if (!body || typeof body !== 'object') {
+    throw new Error('Cuerpo de la petición inválido.');
+  }
+
+  const quality = ['high', 'medium', 'light'].includes(body.quality) ? body.quality : 'medium';
+  const startTime = typeof body.startTime === 'string' && /^\d{1,2}:\d{2}(:\d{2})?$/.test(body.startTime.trim()) 
+    ? body.startTime.trim() 
+    : '00:00:00';
+  const duration = (body.duration && !isNaN(body.duration) && Number(body.duration) > 0 && Number(body.duration) <= 60)
+    ? Number(body.duration)
+    : 10;
+
+  return {
+    quality,
+    startTime,
+    duration,
+    videoUrl: body.videoUrl ? String(body.videoUrl).trim() : undefined
+  };
+}
+
 module.exports = {
   JobStatus,
   MediaPlatform,
   DownloadMode,
   AllowedAudioFormats,
   validateYouTubeDownloadRequest,
-  validateSpotifyDownloadRequest
+  validateSpotifyDownloadRequest,
+  validateTwitterDownloadRequest,
+  validateFacebookDownloadRequest,
+  validateGifConversionRequest
 };

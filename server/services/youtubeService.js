@@ -17,6 +17,24 @@ function getBinaryPaths() {
   return { ytDlpCmd, ffmpegCmd, binDir: BIN_DIR, hasLocalFfmpeg };
 }
 
+function getBestThumbnailUrl(info) {
+  if (!info) return '';
+  if (Array.isArray(info.thumbnails) && info.thumbnails.length > 0) {
+    const sorted = [...info.thumbnails].filter(t => t && t.url).sort((a, b) => {
+      const areaA = (a.width || 0) * (a.height || 0);
+      const areaB = (b.width || 0) * (b.height || 0);
+      return areaB - areaA;
+    });
+    if (sorted[0] && sorted[0].url) {
+      return sorted[0].url;
+    }
+  }
+  if (info.id) {
+    return `https://img.youtube.com/vi/${info.id}/maxresdefault.jpg`;
+  }
+  return info.thumbnail || '';
+}
+
 function formatDuration(seconds) {
   if (!seconds) return '0:00';
   const hrs = Math.floor(seconds / 3600);
@@ -91,6 +109,7 @@ function getVideoInfo(url) {
           id: info.id,
           title: info.title,
           thumbnail: info.thumbnail,
+          maxThumbnail: getBestThumbnailUrl(info),
           uploader: info.uploader || info.channel || 'Desconocido',
           duration: info.duration,
           durationFormatted: formatDuration(info.duration),
@@ -263,5 +282,6 @@ function downloadYouTube(options, onProgress, onProcessSpawn) {
 module.exports = {
   getVideoInfo,
   downloadYouTube,
-  getBinaryPaths
+  getBinaryPaths,
+  getBestThumbnailUrl
 };

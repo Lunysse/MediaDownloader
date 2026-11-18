@@ -15,7 +15,22 @@ const ALLOWED_DOMAINS = [
   'music.youtube.com',
   'youtu.be',
   'open.spotify.com',
-  'spotify.com'
+  'spotify.com',
+  // X (Twitter)
+  'twitter.com',
+  'www.twitter.com',
+  'mobile.twitter.com',
+  'x.com',
+  'www.x.com',
+  'mobile.x.com',
+  't.co',
+  // Facebook
+  'facebook.com',
+  'www.facebook.com',
+  'm.facebook.com',
+  'web.facebook.com',
+  'fb.watch',
+  'fb.com'
 ];
 
 // Directorios protegidos de Windows donde NO se permite guardar descargas
@@ -126,7 +141,7 @@ function validateUrl(rawUrl) {
   if (!isAllowed) {
     return {
       valid: false,
-      error: 'Dominio no autorizado. Solo se permiten enlaces oficiales de YouTube y Spotify.'
+      error: 'Dominio no autorizado. Solo se permiten enlaces oficiales de YouTube, Spotify, X (Twitter) y Facebook.'
     };
   }
 

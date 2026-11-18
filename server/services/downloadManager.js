@@ -1,8 +1,11 @@
 const path = require('path');
 const fs = require('fs');
-const { exec } = require('child_process');
-const { downloadYouTube } = require('./youtubeService');
+const { exec, spawn } = require('child_process');
+const { downloadYouTube, getBinaryPaths } = require('./youtubeService');
 const { downloadSpotifyTrack } = require('./spotifyService');
+const { downloadTwitter } = require('./twitterService');
+const { downloadFacebook } = require('./facebookService');
+const { convertVideoToGif } = require('./gifConverterService');
 const { JobStatus } = require('../types/contracts');
 
 class DownloadManager {
@@ -208,6 +211,260 @@ class DownloadManager {
           status: JobStatus.ERROR,
           error: err.message,
           message: 'Error en la descarga'
+        });
+      }
+      throw err;
+    }
+  }
+
+  async runTwitterJob(options) {
+    const isGif = options.mode === 'gif' || options.asGif === true;
+    const job = this.createJob({
+      title: options.title || (isGif ? 'GIF de X (Twitter)' : 'Video de X (Twitter)'),
+      platform: 'twitter',
+      mode: isGif ? 'gif' : options.mode,
+      quality: options.quality,
+      format: isGif ? 'gif' : (options.mode === 'audio' ? options.audioFormat : 'mp4'),
+      cover: options.thumbnail
+    });
+
+    try {
+      const result = await downloadTwitter(
+        options,
+        (prog) => {
+          this.updateJob(job.id, {
+            status: prog.stage,
+            percent: prog.percent || 0,
+            speed: prog.speed || job.speed,
+            eta: prog.eta || job.eta,
+            message: prog.message,
+            filePath: prog.filePath || job.filePath
+          });
+        },
+        (child, cancelCallback) => {
+          this.jobProcesses.set(job.id, { child, cancelCallback });
+        }
+      );
+
+      this.jobProcesses.delete(job.id);
+      if (result.filePath) {
+        result.filePath = result.filePath.replace(/^["']|["']$/g, '');
+      }
+
+      let fileSize = 'N/A';
+      if (result.filePath && fs.existsSync(result.filePath)) {
+        const bytes = fs.statSync(result.filePath).size;
+        fileSize = (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      this.updateJob(job.id, {
+        status: JobStatus.COMPLETED,
+        percent: 100,
+        filePath: result.filePath,
+        message: isGif ? '¡GIF de X creado con éxito!' : '¡Descarga de X finalizada con éxito!'
+      });
+
+      this.addToHistory({
+        title: options.title || (isGif ? 'GIF de X' : 'Video de X'),
+        type: isGif ? 'twitter_gif' : (options.mode === 'video' ? 'twitter_video' : 'twitter_audio'),
+        quality: isGif ? 'GIF Animado' : options.quality,
+        format: isGif ? 'gif' : (options.mode === 'video' ? 'mp4' : options.audioFormat),
+        filePath: result.filePath,
+        fileSize,
+        cover: options.thumbnail
+      });
+
+      return result;
+    } catch (err) {
+      this.jobProcesses.delete(job.id);
+      if (job.status !== JobStatus.CANCELLED) {
+        this.updateJob(job.id, {
+          status: JobStatus.ERROR,
+          error: err.message,
+          message: 'Error en la descarga de X'
+        });
+      }
+      throw err;
+    }
+  }
+
+  async runFacebookJob(options) {
+    const job = this.createJob({
+      title: options.title || 'Video de Facebook',
+      platform: 'facebook',
+      mode: options.mode,
+      quality: options.quality,
+      format: options.mode === 'video' ? 'mp4' : options.audioFormat,
+      cover: options.thumbnail
+    });
+
+    try {
+      const result = await downloadFacebook(
+        options,
+        (prog) => {
+          this.updateJob(job.id, {
+            status: prog.stage,
+            percent: prog.percent || 0,
+            speed: prog.speed || job.speed,
+            eta: prog.eta || job.eta,
+            message: prog.message,
+            filePath: prog.filePath || job.filePath
+          });
+        },
+        (child, cancelCallback) => {
+          this.jobProcesses.set(job.id, { child, cancelCallback });
+        }
+      );
+
+      this.jobProcesses.delete(job.id);
+      if (result.filePath) {
+        result.filePath = result.filePath.replace(/^["']|["']$/g, '');
+      }
+
+      let fileSize = 'N/A';
+      if (result.filePath && fs.existsSync(result.filePath)) {
+        const bytes = fs.statSync(result.filePath).size;
+        fileSize = (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      }
+
+      this.updateJob(job.id, {
+        status: JobStatus.COMPLETED,
+        percent: 100,
+        filePath: result.filePath,
+        message: '¡Descarga de Facebook finalizada con éxito!'
+      });
+
+      this.addToHistory({
+        title: options.title || 'Video de Facebook',
+        type: options.mode === 'video' ? 'facebook_video' : 'facebook_audio',
+        quality: options.quality,
+        format: options.mode === 'video' ? 'mp4' : options.audioFormat,
+        filePath: result.filePath,
+        fileSize,
+        cover: options.thumbnail
+      });
+
+      return result;
+    } catch (err) {
+      this.jobProcesses.delete(job.id);
+      if (job.status !== JobStatus.CANCELLED) {
+        this.updateJob(job.id, {
+          status: JobStatus.ERROR,
+          error: err.message,
+          message: 'Error en la descarga de Facebook'
+        });
+      }
+      throw err;
+    }
+  }
+
+  async runGifConversionJob(options) {
+    const job = this.createJob({
+      title: options.title || 'Conversión de Video a GIF',
+      platform: 'gif',
+      mode: 'gif',
+      quality: options.quality || 'medium',
+      format: 'gif',
+      cover: options.thumbnail || ''
+    });
+
+    try {
+      let sourceVideoPath = options.inputPath;
+      let tempDownloaded = false;
+
+      // Si nos dieron una URL en vez de archivo local, descargamos el video primero a .temp
+      if (!sourceVideoPath && options.videoUrl) {
+        this.updateJob(job.id, {
+          status: JobStatus.DOWNLOADING,
+          percent: 15,
+          message: 'Descargando video de origen para convertirlo a GIF...'
+        });
+
+        const tempDir = path.join(PROJECT_ROOT, 'downloads', '.temp');
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+
+        sourceVideoPath = path.join(tempDir, `source_gif_${Date.now()}.mp4`);
+        tempDownloaded = true;
+
+        const { ytDlpCmd } = getBinaryPaths();
+        await new Promise((res, rej) => {
+          const dlProc = spawn(ytDlpCmd, [
+            '--no-playlist',
+            '--no-warnings',
+            '--no-exec',
+            '-f', 'best',
+            '-o', sourceVideoPath,
+            '--',
+            options.videoUrl
+          ]);
+          this.jobProcesses.set(job.id, { child: dlProc });
+
+          dlProc.on('close', (c) => {
+            if (c === 0 && fs.existsSync(sourceVideoPath)) res();
+            else rej(new Error('No se pudo descargar el video desde la URL proporcionada.'));
+          });
+          dlProc.on('error', rej);
+        });
+      }
+
+      this.updateJob(job.id, {
+        status: JobStatus.PROCESSING,
+        percent: 45,
+        message: `Generando GIF animado (${options.quality || 'medio'})...`
+      });
+
+      const result = await convertVideoToGif(
+        {
+          inputPath: sourceVideoPath,
+          outputDir: options.outputDir || path.join(PROJECT_ROOT, 'downloads'),
+          quality: options.quality,
+          startTime: options.startTime || '00:00:00',
+          duration: options.duration || 10,
+          baseName: options.title || 'Animacion'
+        },
+        (prog) => {
+          this.updateJob(job.id, {
+            status: prog.stage,
+            percent: prog.percent || job.percent,
+            message: prog.message,
+            filePath: prog.filePath || job.filePath
+          });
+        },
+        (child, cancelCallback) => {
+          this.jobProcesses.set(job.id, { child, cancelCallback });
+        }
+      );
+
+      if (tempDownloaded && fs.existsSync(sourceVideoPath)) {
+        try { fs.unlinkSync(sourceVideoPath); } catch (e) {}
+      }
+
+      this.jobProcesses.delete(job.id);
+      this.updateJob(job.id, {
+        status: JobStatus.COMPLETED,
+        percent: 100,
+        filePath: result.filePath,
+        message: '¡GIF animado generado con éxito!'
+      });
+
+      this.addToHistory({
+        title: options.title || 'GIF Animado',
+        type: 'custom_gif',
+        quality: `GIF (${options.quality || 'estándar'})`,
+        format: 'gif',
+        filePath: result.filePath,
+        fileSize: result.fileSize || 'N/A',
+        cover: options.thumbnail || ''
+      });
+
+      return result;
+    } catch (err) {
+      this.jobProcesses.delete(job.id);
+      if (job.status !== JobStatus.CANCELLED) {
+        this.updateJob(job.id, {
+          status: JobStatus.ERROR,
+          error: err.message,
+          message: 'Error en la conversión a GIF'
         });
       }
       throw err;

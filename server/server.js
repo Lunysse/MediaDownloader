@@ -14,12 +14,18 @@ const {
 
 const {
   validateYouTubeDownloadRequest,
-  validateSpotifyDownloadRequest
+  validateSpotifyDownloadRequest,
+  validateTwitterDownloadRequest,
+  validateFacebookDownloadRequest,
+  validateGifConversionRequest
 } = require('./types/contracts');
 
 const { getVideoInfo } = require('./services/youtubeService');
 const { getSpotifyDetails } = require('./services/spotifyService');
+const { getTwitterInfo } = require('./services/twitterService');
+const { getFacebookInfo } = require('./services/facebookService');
 const downloadManager = require('./services/downloadManager');
+const multer = require('multer');
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +35,23 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || (process.env.PORT ? '0.0.0.0' : '127.0.0.1');
 const PROJECT_ROOT = path.resolve(__dirname, '..');
 const DEFAULT_DOWNLOAD_DIR = process.env.DOWNLOAD_DIR || path.join(PROJECT_ROOT, 'downloads');
+
+// Configuración de Multer para recepción de videos locales a convertir a GIF
+const UPLOAD_TEMP_DIR = path.join(PROJECT_ROOT, 'downloads', '.temp', 'uploads');
+if (!fs.existsSync(UPLOAD_TEMP_DIR)) {
+  fs.mkdirSync(UPLOAD_TEMP_DIR, { recursive: true });
+}
+const uploadStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_TEMP_DIR),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '.mp4';
+    cb(null, `upload_${Date.now()}_${Math.random().toString(36).substring(2, 7)}${ext}`);
+  }
+});
+const upload = multer({
+  storage: uploadStorage,
+  limits: { fileSize: 150 * 1024 * 1024 } // Máx 150MB para videos
+});
 
 // Confianza en proxies inversos (Cloudflare, Render, Railway, Nginx)
 app.set('trust proxy', 1);
@@ -104,6 +127,18 @@ app.post('/api/inspect', async (req, res) => {
         platform: 'spotify',
         ...details
       });
+    } else if (cleanUrl.includes('twitter.com') || cleanUrl.includes('x.com') || cleanUrl.includes('t.co')) {
+      const details = await getTwitterInfo(cleanUrl);
+      return res.json({
+        platform: 'twitter',
+        ...details
+      });
+    } else if (cleanUrl.includes('facebook.com') || cleanUrl.includes('fb.watch') || cleanUrl.includes('fb.com')) {
+      const details = await getFacebookInfo(cleanUrl);
+      return res.json({
+        platform: 'facebook',
+        ...details
+      });
     } else {
       const details = await getVideoInfo(cleanUrl);
       return res.json({
@@ -174,7 +209,127 @@ app.post('/api/download/spotify', async (req, res) => {
   }
 });
 
-// 4. Cancelar descarga activa
+// 4. Iniciar descarga de X (Twitter)
+app.post('/api/download/twitter', async (req, res) => {
+  try {
+    const validated = validateTwitterDownloadRequest(req.body);
+    const urlValidation = validateUrl(validated.url);
+    if (!urlValidation.valid) {
+      return res.status(400).json({ error: urlValidation.error });
+    }
+
+    const targetDir = sanitizePath(validated.outputDir || currentConfig.downloadDir, DEFAULT_DOWNLOAD_DIR);
+
+    downloadManager.runTwitterJob({
+      ...validated,
+      url: urlValidation.sanitizedUrl,
+      outputDir: targetDir
+    }).catch(err => {
+      console.error('[TWITTER DOWNLOAD BG ERROR]:', err.message);
+    });
+
+    res.json({ success: true, message: 'Descarga de X iniciada con éxito' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 5. Iniciar descarga de Facebook
+app.post('/api/download/facebook', async (req, res) => {
+  try {
+    const validated = validateFacebookDownloadRequest(req.body);
+    const urlValidation = validateUrl(validated.url);
+    if (!urlValidation.valid) {
+      return res.status(400).json({ error: urlValidation.error });
+    }
+
+    const targetDir = sanitizePath(validated.outputDir || currentConfig.downloadDir, DEFAULT_DOWNLOAD_DIR);
+
+    downloadManager.runFacebookJob({
+      ...validated,
+      url: urlValidation.sanitizedUrl,
+      outputDir: targetDir
+    }).catch(err => {
+      console.error('[FACEBOOK DOWNLOAD BG ERROR]:', err.message);
+    });
+
+    res.json({ success: true, message: 'Descarga de Facebook iniciada con éxito' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 6. Convertir video a GIF animado (desde archivo local o URL de publicación)
+app.post('/api/convert/video-to-gif', upload.single('videoFile'), async (req, res) => {
+  try {
+    const validated = validateGifConversionRequest(req.body);
+    const targetDir = sanitizePath(req.body.outputDir || currentConfig.downloadDir, DEFAULT_DOWNLOAD_DIR);
+
+    let inputPath = req.file ? req.file.path : null;
+    let videoUrl = validated.videoUrl;
+
+    if (!inputPath && !videoUrl) {
+      return res.status(400).json({ error: 'Debes subir un archivo de video o ingresar el enlace de una publicación.' });
+    }
+
+    if (videoUrl) {
+      const urlValidation = validateUrl(videoUrl);
+      if (!urlValidation.valid) {
+        return res.status(400).json({ error: urlValidation.error });
+      }
+      videoUrl = urlValidation.sanitizedUrl;
+    }
+
+    const originalTitle = req.body.title || (req.file ? req.file.originalname.replace(/\.[^/.]+$/, '') : 'Animacion_GIF');
+
+    downloadManager.runGifConversionJob({
+      inputPath,
+      videoUrl,
+      quality: validated.quality,
+      startTime: validated.startTime,
+      duration: validated.duration,
+      title: originalTitle,
+      outputDir: targetDir
+    }).catch(err => {
+      console.error('[GIF CONVERSION BG ERROR]:', err.message);
+    });
+
+    res.json({ success: true, message: 'Conversión a GIF iniciada con éxito' });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// 7. Descargar miniatura de YouTube en máxima resolución
+app.get('/api/download-thumbnail', async (req, res) => {
+  try {
+    const { url, title } = req.query;
+    if (!url || typeof url !== 'string') {
+      return res.status(400).send('URL de miniatura requerida.');
+    }
+
+    const parsed = new URL(url);
+    if (!['http:', 'https:'].includes(parsed.protocol)) {
+      return res.status(400).send('Protocolo no válido.');
+    }
+
+    const fetchRes = await fetch(url);
+    if (!fetchRes.ok) {
+      return res.status(502).send('No se pudo obtener la imagen desde el servidor origen.');
+    }
+
+    const buffer = Buffer.from(await fetchRes.arrayBuffer());
+    const cleanTitle = (title ? String(title).replace(/[^a-zA-Z0-9_\-\s]/g, '').trim() : 'Miniatura') || 'Miniatura';
+    
+    res.setHeader('Content-Type', fetchRes.headers.get('content-type') || 'image/jpeg');
+    res.setHeader('Content-Disposition', `attachment; filename="${cleanTitle} - Miniatura HD.jpg"`);
+    res.send(buffer);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 8. Cancelar descarga activa
 app.post('/api/download/cancel', (req, res) => {
   const { jobId } = req.body;
   if (!jobId || typeof jobId !== 'string') {

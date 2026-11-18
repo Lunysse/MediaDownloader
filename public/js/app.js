@@ -26,17 +26,26 @@ const previewAudioPlayer = document.getElementById('previewAudioPlayer');
 const tabIndicator = document.getElementById('tabIndicator');
 const tabYoutube = document.getElementById('tabYoutube');
 const tabSpotify = document.getElementById('tabSpotify');
+const tabTwitter = document.getElementById('tabTwitter');
+const tabFacebook = document.getElementById('tabFacebook');
+const tabGifConverter = document.getElementById('tabGifConverter');
 const tabHistory = document.getElementById('tabHistory');
 const tabComingSoon = document.getElementById('tabComingSoon');
 const historyBadgeCount = document.getElementById('historyBadgeCount');
 
 const ambientYt = document.getElementById('ambientYt');
 const ambientSpot = document.getElementById('ambientSpot');
+const ambientTwitter = document.getElementById('ambientTwitter');
+const ambientFb = document.getElementById('ambientFb');
+const ambientGif = document.getElementById('ambientGif');
 const ambientGray = document.getElementById('ambientGray');
 
 // Views
 const viewYoutube = document.getElementById('viewYoutube');
 const viewSpotify = document.getElementById('viewSpotify');
+const viewTwitter = document.getElementById('viewTwitter');
+const viewFacebook = document.getElementById('viewFacebook');
+const viewGifConverter = document.getElementById('viewGifConverter');
 const viewHistory = document.getElementById('viewHistory');
 const viewComingSoon = document.getElementById('viewComingSoon');
 
@@ -61,6 +70,7 @@ const ytQualityChipsGrid = document.getElementById('ytQualityChipsGrid');
 const ytAudioChipsGrid = document.getElementById('ytAudioChipsGrid');
 const btnDownloadYt = document.getElementById('btnDownloadYt');
 const btnDownloadYtText = document.getElementById('btnDownloadYtText');
+const btnDownloadYtThumb = document.getElementById('btnDownloadYtThumb');
 
 // Spotify Elements
 const urlInputSpot = document.getElementById('urlInputSpot');
@@ -85,6 +95,82 @@ const spotTracksList = document.getElementById('spotTracksList');
 const spotSelectAll = document.getElementById('spotSelectAll');
 const spotSelectedCount = document.getElementById('spotSelectedCount');
 const spotTrackSearchInput = document.getElementById('spotTrackSearchInput');
+
+// Twitter / X Elements & State
+let twitterInspectedData = null;
+let twitterCurrentMode = 'video'; // 'video' | 'audio' | 'gif'
+let twitterSelectedQuality = 'best';
+
+const urlInputTwitter = document.getElementById('urlInputTwitter');
+const btnClearTwitter = document.getElementById('btnClearTwitter');
+const btnPasteTwitter = document.getElementById('btnPasteTwitter');
+const btnAnalyzeTwitter = document.getElementById('btnAnalyzeTwitter');
+const skeletonTwitter = document.getElementById('skeletonTwitter');
+const twitterCard = document.getElementById('twitterCard');
+const twitterThumbnail = document.getElementById('twitterThumbnail');
+const twitterDuration = document.getElementById('twitterDuration');
+const twitterTypeBadge = document.getElementById('twitterTypeBadge');
+const twitterTitle = document.getElementById('twitterTitle');
+const twitterUploaderText = document.getElementById('twitterUploaderText');
+const btnModeTwitterVideo = document.getElementById('btnModeTwitterVideo');
+const btnModeTwitterAudio = document.getElementById('btnModeTwitterAudio');
+const btnModeTwitterGif = document.getElementById('btnModeTwitterGif');
+const twitterVideoChipsSection = document.getElementById('twitterVideoChipsSection');
+const twitterQualityChipsGrid = document.getElementById('twitterQualityChipsGrid');
+const twitterDirectGifBox = document.getElementById('twitterDirectGifBox');
+const twitterDirectUrlInput = document.getElementById('twitterDirectUrlInput');
+const btnCopyTwitterDirectUrl = document.getElementById('btnCopyTwitterDirectUrl');
+const btnDownloadTwitter = document.getElementById('btnDownloadTwitter');
+const btnDownloadTwitterText = document.getElementById('btnDownloadTwitterText');
+
+// Facebook Elements & State
+let facebookInspectedData = null;
+let facebookCurrentMode = 'video'; // 'video' | 'audio'
+let facebookSelectedQuality = 'best';
+
+const urlInputFacebook = document.getElementById('urlInputFacebook');
+const btnClearFacebook = document.getElementById('btnClearFacebook');
+const btnPasteFacebook = document.getElementById('btnPasteFacebook');
+const btnAnalyzeFacebook = document.getElementById('btnAnalyzeFacebook');
+const skeletonFacebook = document.getElementById('skeletonFacebook');
+const facebookCard = document.getElementById('facebookCard');
+const facebookThumbnail = document.getElementById('facebookThumbnail');
+const facebookDuration = document.getElementById('facebookDuration');
+const facebookTitle = document.getElementById('facebookTitle');
+const facebookUploaderText = document.getElementById('facebookUploaderText');
+const btnModeFacebookVideo = document.getElementById('btnModeFacebookVideo');
+const btnModeFacebookAudio = document.getElementById('btnModeFacebookAudio');
+const facebookVideoChipsSection = document.getElementById('facebookVideoChipsSection');
+const facebookQualityChipsGrid = document.getElementById('facebookQualityChipsGrid');
+const btnDownloadFacebook = document.getElementById('btnDownloadFacebook');
+const btnDownloadFacebookText = document.getElementById('btnDownloadFacebookText');
+
+// Video to GIF Converter Elements & State
+let gifInputMode = 'upload'; // 'upload' | 'url'
+let gifSelectedQuality = 'medium'; // 'high' | 'medium' | 'light'
+let gifSelectedFile = null;
+
+const btnGifTabUpload = document.getElementById('btnGifTabUpload');
+const btnGifTabUrl = document.getElementById('btnGifTabUrl');
+const gifUploadSection = document.getElementById('gifUploadSection');
+const gifUrlSection = document.getElementById('gifUrlSection');
+const gifDropzone = document.getElementById('gifDropzone');
+const gifFileInput = document.getElementById('gifFileInput');
+const gifSelectedFileInfo = document.getElementById('gifSelectedFileInfo');
+const gifSelectedFileName = document.getElementById('gifSelectedFileName');
+const gifSelectedFileSize = document.getElementById('gifSelectedFileSize');
+const gifUrlInput = document.getElementById('gifUrlInput');
+const btnPasteGifUrl = document.getElementById('btnPasteGifUrl');
+const gifQualityButtons = document.querySelectorAll('.gif-quality-btn');
+const gifStartTimeInput = document.getElementById('gifStartTimeInput');
+const gifDurationInput = document.getElementById('gifDurationInput');
+const btnStartGifConvert = document.getElementById('btnStartGifConvert');
+const gifResultCard = document.getElementById('gifResultCard');
+const gifResultPreview = document.getElementById('gifResultPreview');
+const gifResultTitle = document.getElementById('gifResultTitle');
+const gifResultDetails = document.getElementById('gifResultDetails');
+const btnDownloadGeneratedGif = document.getElementById('btnDownloadGeneratedGif');
+const btnCopyGeneratedGifUrl = document.getElementById('btnCopyGeneratedGifUrl');
 
 // Concurrency Selector
 const concurrencyButtons = document.querySelectorAll('.concurrency-btn');
@@ -492,25 +578,30 @@ class CustomMediaPlayerController {
 // Ambient Lighting & Space Stars Sync
 // ==========================================================================
 function updateAmbientForTab(tab) {
+  const orbs = [ambientYt, ambientSpot, ambientTwitter, ambientFb, ambientGif, ambientGray];
+  orbs.forEach(orb => { if (orb) orb.style.opacity = '0.04'; });
+
   if (tab === 'youtube') {
-    if (ambientYt) ambientYt.style.opacity = '0.8';
-    if (ambientSpot) ambientSpot.style.opacity = '0.15';
-    if (ambientGray) ambientGray.style.opacity = '0';
+    if (ambientYt) ambientYt.style.opacity = '0.85';
     if (spaceStarsEngine) spaceStarsEngine.setThemeTint(255, 180, 190); // Warm reddish starlight
   } else if (tab === 'spotify') {
-    if (ambientYt) ambientYt.style.opacity = '0.15';
-    if (ambientSpot) ambientSpot.style.opacity = '0.8';
-    if (ambientGray) ambientGray.style.opacity = '0';
+    if (ambientSpot) ambientSpot.style.opacity = '0.85';
     if (spaceStarsEngine) spaceStarsEngine.setThemeTint(180, 255, 200); // Emerald celestial starlight
+  } else if (tab === 'twitter') {
+    if (ambientTwitter) ambientTwitter.style.opacity = '0.85';
+    if (spaceStarsEngine) spaceStarsEngine.setThemeTint(220, 220, 255); // Monochromatic silver starlight
+  } else if (tab === 'facebook') {
+    if (ambientFb) ambientFb.style.opacity = '0.85';
+    if (spaceStarsEngine) spaceStarsEngine.setThemeTint(170, 210, 255); // Facebook blue celestial starlight
+  } else if (tab === 'gif_converter') {
+    if (ambientGif) ambientGif.style.opacity = '0.85';
+    if (spaceStarsEngine) spaceStarsEngine.setThemeTint(255, 210, 160); // Warm amber & violet starlight
   } else if (tab === 'history') {
     if (ambientYt) ambientYt.style.opacity = '0.3';
     if (ambientSpot) ambientSpot.style.opacity = '0.3';
-    if (ambientGray) ambientGray.style.opacity = '0';
     if (spaceStarsEngine) spaceStarsEngine.setThemeTint(190, 200, 255); // Indigo twilight starlight
   } else if (tab === 'coming_soon') {
-    if (ambientYt) ambientYt.style.opacity = '0.1';
-    if (ambientSpot) ambientSpot.style.opacity = '0.1';
-    if (ambientGray) ambientGray.style.opacity = '0.7';
+    if (ambientGray) ambientGray.style.opacity = '0.75';
     if (spaceStarsEngine) spaceStarsEngine.setThemeTint(220, 225, 235); // Silver frosted starlight
   }
 }
@@ -618,7 +709,8 @@ function updateTabIndicator(activeBtn) {
 
 function switchTab(tab, buttonEl) {
   currentTab = tab;
-  [tabYoutube, tabSpotify, tabHistory, tabComingSoon].forEach(btn => {
+  const allTabBtns = [tabYoutube, tabSpotify, tabTwitter, tabFacebook, tabGifConverter, tabHistory, tabComingSoon].filter(Boolean);
+  allTabBtns.forEach(btn => {
     btn.classList.remove('active');
     btn.classList.add('text-slate-400');
     btn.classList.remove('text-white');
@@ -627,30 +719,39 @@ function switchTab(tab, buttonEl) {
   const targetBtn = buttonEl || (
     tab === 'youtube' ? tabYoutube :
     tab === 'spotify' ? tabSpotify :
+    tab === 'twitter' ? tabTwitter :
+    tab === 'facebook' ? tabFacebook :
+    tab === 'gif_converter' ? tabGifConverter :
     tab === 'history' ? tabHistory : tabComingSoon
   );
 
-  targetBtn.classList.add('active', 'text-white');
-  targetBtn.classList.remove('text-slate-400');
-  updateTabIndicator(targetBtn);
+  if (targetBtn) {
+    targetBtn.classList.add('active', 'text-white');
+    targetBtn.classList.remove('text-slate-400');
+    updateTabIndicator(targetBtn);
+  }
 
   // Stop any playing preview
   stopPreviewAudio();
 
   // Hide all dedicated views
-  viewYoutube.classList.add('hidden');
-  viewSpotify.classList.add('hidden');
-  viewHistory.classList.add('hidden');
-  viewComingSoon.classList.add('hidden');
+  const allViews = [viewYoutube, viewSpotify, viewTwitter, viewFacebook, viewGifConverter, viewHistory, viewComingSoon].filter(Boolean);
+  allViews.forEach(v => v.classList.add('hidden'));
 
-  if (tab === 'youtube') {
+  if (tab === 'youtube' && viewYoutube) {
     viewYoutube.classList.remove('hidden');
-  } else if (tab === 'spotify') {
+  } else if (tab === 'spotify' && viewSpotify) {
     viewSpotify.classList.remove('hidden');
-  } else if (tab === 'history') {
+  } else if (tab === 'twitter' && viewTwitter) {
+    viewTwitter.classList.remove('hidden');
+  } else if (tab === 'facebook' && viewFacebook) {
+    viewFacebook.classList.remove('hidden');
+  } else if (tab === 'gif_converter' && viewGifConverter) {
+    viewGifConverter.classList.remove('hidden');
+  } else if (tab === 'history' && viewHistory) {
     viewHistory.classList.remove('hidden');
     renderHistory();
-  } else if (tab === 'coming_soon') {
+  } else if (tab === 'coming_soon' && viewComingSoon) {
     viewComingSoon.classList.remove('hidden');
   }
 
@@ -658,10 +759,13 @@ function switchTab(tab, buttonEl) {
   updateAmbientForTab(tab);
 }
 
-tabYoutube.addEventListener('click', () => switchTab('youtube', tabYoutube));
-tabSpotify.addEventListener('click', () => switchTab('spotify', tabSpotify));
-tabHistory.addEventListener('click', () => switchTab('history', tabHistory));
-tabComingSoon.addEventListener('click', () => switchTab('coming_soon', tabComingSoon));
+if (tabYoutube) tabYoutube.addEventListener('click', () => switchTab('youtube', tabYoutube));
+if (tabSpotify) tabSpotify.addEventListener('click', () => switchTab('spotify', tabSpotify));
+if (tabTwitter) tabTwitter.addEventListener('click', () => switchTab('twitter', tabTwitter));
+if (tabFacebook) tabFacebook.addEventListener('click', () => switchTab('facebook', tabFacebook));
+if (tabGifConverter) tabGifConverter.addEventListener('click', () => switchTab('gif_converter', tabGifConverter));
+if (tabHistory) tabHistory.addEventListener('click', () => switchTab('history', tabHistory));
+if (tabComingSoon) tabComingSoon.addEventListener('click', () => switchTab('coming_soon', tabComingSoon));
 
 window.addEventListener('resize', () => {
   const activeBtn = document.querySelector('.tab-btn.active');
@@ -969,6 +1073,29 @@ btnDownloadYt.addEventListener('click', async () => {
   }
 });
 
+// Descarga directa de la miniatura de YouTube en máxima resolución
+if (btnDownloadYtThumb) {
+  btnDownloadYtThumb.addEventListener('click', () => {
+    if (!inspectedData || inspectedData.platform !== 'youtube') return;
+    const thumbUrl = inspectedData.maxThumbnail || inspectedData.thumbnail;
+    if (!thumbUrl) {
+      showToast('No se encontró miniatura disponible para este video', 'error');
+      return;
+    }
+    const cleanTitle = (inspectedData.title || 'miniatura_youtube').replace(/[/\\?%*:|"<>]/g, '_');
+    const endpoint = `/api/download-thumbnail?url=${encodeURIComponent(thumbUrl)}&title=${encodeURIComponent(cleanTitle)}`;
+    
+    showToast('Descargando miniatura en máxima resolución...', 'info');
+
+    const downloadLink = document.createElement('a');
+    downloadLink.href = endpoint;
+    downloadLink.download = `${cleanTitle}_maxres.jpg`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  });
+}
+
 // ==========================================================================
 // 2. Spotify Actions & Inspect
 // ==========================================================================
@@ -1271,6 +1398,604 @@ btnDownloadSpot.addEventListener('click', async () => {
 });
 
 // ==========================================================================
+// 3. Twitter / X Studio & Direct GIF Logic
+// ==========================================================================
+if (urlInputTwitter) {
+  urlInputTwitter.addEventListener('input', () => {
+    if (urlInputTwitter.value.trim().length > 0) {
+      if (btnClearTwitter) btnClearTwitter.classList.remove('hidden');
+    } else {
+      if (btnClearTwitter) btnClearTwitter.classList.add('hidden');
+    }
+  });
+
+  urlInputTwitter.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') analyzeTwitterUrl();
+  });
+}
+
+if (btnClearTwitter) {
+  btnClearTwitter.addEventListener('click', () => {
+    urlInputTwitter.value = '';
+    btnClearTwitter.classList.add('hidden');
+    urlInputTwitter.focus();
+  });
+}
+
+if (btnPasteTwitter) {
+  btnPasteTwitter.addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      urlInputTwitter.value = text;
+      if (btnClearTwitter) btnClearTwitter.classList.remove('hidden');
+      analyzeTwitterUrl();
+    } catch {
+      showToast('Permiso del portapapeles denegado', 'error');
+    }
+  });
+}
+
+if (btnAnalyzeTwitter) {
+  btnAnalyzeTwitter.addEventListener('click', analyzeTwitterUrl);
+}
+
+async function analyzeTwitterUrl() {
+  const url = urlInputTwitter ? urlInputTwitter.value.trim() : '';
+  if (!url) {
+    showToast('Por favor introduce un enlace de publicación de X / Twitter', 'error');
+    return;
+  }
+
+  if (skeletonTwitter) skeletonTwitter.classList.remove('hidden');
+  if (twitterCard) twitterCard.classList.add('hidden');
+  if (btnAnalyzeTwitter) {
+    btnAnalyzeTwitter.disabled = true;
+    btnAnalyzeTwitter.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Analizando...</span>';
+  }
+
+  try {
+    const res = await fetch(`/api/inspect?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al analizar la publicación de X');
+
+    twitterInspectedData = data;
+    renderTwitterCard(data);
+    showToast('Publicación de X analizada con éxito', 'success');
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'error');
+  } finally {
+    if (skeletonTwitter) skeletonTwitter.classList.add('hidden');
+    if (btnAnalyzeTwitter) {
+      btnAnalyzeTwitter.disabled = false;
+      btnAnalyzeTwitter.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>Analizar Tweet</span>';
+    }
+  }
+}
+
+function renderTwitterCard(data) {
+  if (!twitterCard) return;
+
+  if (twitterThumbnail) {
+    twitterThumbnail.src = data.thumbnail || 'https://images.unsplash.com/photo-1611605698335-8b1569810432?w=800';
+  }
+  if (twitterTitle) {
+    twitterTitle.textContent = data.title || 'Publicación en X (Twitter)';
+  }
+  if (twitterUploaderText) {
+    twitterUploaderText.textContent = data.uploader ? `@${data.uploader}` : '@x';
+  }
+  if (twitterDuration) {
+    twitterDuration.textContent = formatDuration(data.duration || 0);
+  }
+  if (twitterTypeBadge) {
+    twitterTypeBadge.textContent = data.isGif ? 'GIF Animado' : 'Video';
+  }
+
+  // Handle direct media link for GIF
+  if (twitterDirectUrlInput) {
+    twitterDirectUrlInput.value = data.directMediaUrl || '';
+  }
+  if (twitterDirectGifBox) {
+    if (data.directMediaUrl || data.isGif) {
+      twitterDirectGifBox.classList.remove('hidden');
+    } else {
+      twitterDirectGifBox.classList.add('hidden');
+    }
+  }
+
+  // Set default mode
+  if (data.isGif) {
+    setTwitterMode('gif');
+  } else {
+    setTwitterMode('video');
+  }
+
+  // Populate resolutions
+  renderTwitterResolutions(data.resolutions || ['1080p', '720p', '480p']);
+
+  twitterCard.classList.remove('hidden');
+  twitterCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setTwitterMode(mode) {
+  twitterCurrentMode = mode;
+  [btnModeTwitterVideo, btnModeTwitterAudio, btnModeTwitterGif].forEach(btn => {
+    if (btn) btn.classList.remove('selected-yt');
+  });
+
+  if (mode === 'video' && btnModeTwitterVideo) {
+    btnModeTwitterVideo.classList.add('selected-yt');
+    if (twitterVideoChipsSection) twitterVideoChipsSection.classList.remove('hidden');
+    if (btnDownloadTwitterText) btnDownloadTwitterText.textContent = `Descargar Ahora (MP4 ${twitterSelectedQuality === 'best' ? 'HD' : twitterSelectedQuality})`;
+  } else if (mode === 'audio' && btnModeTwitterAudio) {
+    btnModeTwitterAudio.classList.add('selected-yt');
+    if (twitterVideoChipsSection) twitterVideoChipsSection.classList.add('hidden');
+    if (btnDownloadTwitterText) btnDownloadTwitterText.textContent = 'Descargar Ahora (Audio MP3)';
+  } else if (mode === 'gif' && btnModeTwitterGif) {
+    btnModeTwitterGif.classList.add('selected-yt');
+    if (twitterVideoChipsSection) twitterVideoChipsSection.classList.add('hidden');
+    if (btnDownloadTwitterText) btnDownloadTwitterText.textContent = 'Descargar Ahora (.GIF Nativo)';
+  }
+}
+
+if (btnModeTwitterVideo) btnModeTwitterVideo.addEventListener('click', () => setTwitterMode('video'));
+if (btnModeTwitterAudio) btnModeTwitterAudio.addEventListener('click', () => setTwitterMode('audio'));
+if (btnModeTwitterGif) btnModeTwitterGif.addEventListener('click', () => setTwitterMode('gif'));
+
+function renderTwitterResolutions(resList) {
+  if (!twitterQualityChipsGrid) return;
+  twitterQualityChipsGrid.innerHTML = '';
+
+  const list = resList.length > 0 ? resList : ['best'];
+  if (!list.includes('best')) list.unshift('best');
+
+  list.forEach((res, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const isSelected = (twitterSelectedQuality === res) || (idx === 0 && twitterSelectedQuality === 'best');
+    btn.className = `quality-chip p-3 text-left ${isSelected ? 'selected-twitter' : ''}`;
+    const label = res === 'best' ? 'Máxima Calidad' : `${res}`;
+    btn.innerHTML = `
+      <div class="text-xs font-extrabold text-white flex items-center space-x-1.5">
+        <i class="fa-solid fa-circle-check text-xs ${isSelected ? 'text-white' : 'text-slate-500'}"></i>
+        <span>${label}</span>
+      </div>
+      <div class="text-[10px] text-slate-400 mt-0.5">MP4 H.264</div>
+    `;
+
+    btn.addEventListener('click', () => {
+      twitterSelectedQuality = res;
+      document.querySelectorAll('#twitterQualityChipsGrid .quality-chip').forEach(c => c.classList.remove('selected-twitter'));
+      btn.classList.add('selected-twitter');
+      if (btnDownloadTwitterText && twitterCurrentMode === 'video') {
+        btnDownloadTwitterText.textContent = `Descargar Ahora (MP4 ${res === 'best' ? 'HD' : res})`;
+      }
+    });
+
+    twitterQualityChipsGrid.appendChild(btn);
+  });
+}
+
+// Copiar enlace directo del GIF para reproducir en cualquier sitio
+if (btnCopyTwitterDirectUrl) {
+  btnCopyTwitterDirectUrl.addEventListener('click', async () => {
+    const directUrl = twitterDirectUrlInput ? twitterDirectUrlInput.value.trim() : '';
+    if (!directUrl) {
+      showToast('No hay enlace directo disponible para copiar', 'error');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(directUrl);
+      showToast('¡Enlace directo del GIF copiado! Al pegarlo se reproduce directamente en cualquier app.', 'success');
+    } catch {
+      showToast('No se pudo copiar al portapapeles', 'error');
+    }
+  });
+}
+
+// Descargar contenido de Twitter
+if (btnDownloadTwitter) {
+  btnDownloadTwitter.addEventListener('click', async () => {
+    if (!twitterInspectedData) return;
+
+    btnDownloadTwitter.disabled = true;
+    btnDownloadTwitter.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Iniciando descarga...</span>';
+
+    try {
+      const res = await fetch('/api/download/twitter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: twitterInspectedData.url,
+          mode: twitterCurrentMode,
+          quality: twitterSelectedQuality
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al iniciar descarga de X');
+
+      showToast('Descarga de X iniciada con éxito', 'success');
+      if (activeDownloadsSection) {
+        activeDownloadsSection.classList.remove('hidden');
+        activeDownloadsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      showToast(`Error: ${err.message}`, 'error');
+    } finally {
+      btnDownloadTwitter.disabled = false;
+      setTwitterMode(twitterCurrentMode);
+    }
+  });
+}
+
+// ==========================================================================
+// 4. Facebook Video & Reels Studio Logic
+// ==========================================================================
+if (urlInputFacebook) {
+  urlInputFacebook.addEventListener('input', () => {
+    if (urlInputFacebook.value.trim().length > 0) {
+      if (btnClearFacebook) btnClearFacebook.classList.remove('hidden');
+    } else {
+      if (btnClearFacebook) btnClearFacebook.classList.add('hidden');
+    }
+  });
+
+  urlInputFacebook.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') analyzeFacebookUrl();
+  });
+}
+
+if (btnClearFacebook) {
+  btnClearFacebook.addEventListener('click', () => {
+    urlInputFacebook.value = '';
+    btnClearFacebook.classList.add('hidden');
+    urlInputFacebook.focus();
+  });
+}
+
+if (btnPasteFacebook) {
+  btnPasteFacebook.addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      urlInputFacebook.value = text;
+      if (btnClearFacebook) btnClearFacebook.classList.remove('hidden');
+      analyzeFacebookUrl();
+    } catch {
+      showToast('Permiso del portapapeles denegado', 'error');
+    }
+  });
+}
+
+if (btnAnalyzeFacebook) {
+  btnAnalyzeFacebook.addEventListener('click', analyzeFacebookUrl);
+}
+
+async function analyzeFacebookUrl() {
+  const url = urlInputFacebook ? urlInputFacebook.value.trim() : '';
+  if (!url) {
+    showToast('Por favor introduce un enlace de video o Reel de Facebook', 'error');
+    return;
+  }
+
+  if (skeletonFacebook) skeletonFacebook.classList.remove('hidden');
+  if (facebookCard) facebookCard.classList.add('hidden');
+  if (btnAnalyzeFacebook) {
+    btnAnalyzeFacebook.disabled = true;
+    btnAnalyzeFacebook.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Analizando...</span>';
+  }
+
+  try {
+    const res = await fetch(`/api/inspect?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error al analizar video de Facebook');
+
+    facebookInspectedData = data;
+    renderFacebookCard(data);
+    showToast('Video de Facebook analizado con éxito', 'success');
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'error');
+  } finally {
+    if (skeletonFacebook) skeletonFacebook.classList.add('hidden');
+    if (btnAnalyzeFacebook) {
+      btnAnalyzeFacebook.disabled = false;
+      btnAnalyzeFacebook.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>Analizar Video</span>';
+    }
+  }
+}
+
+function renderFacebookCard(data) {
+  if (!facebookCard) return;
+
+  if (facebookThumbnail) {
+    facebookThumbnail.src = data.thumbnail || 'https://images.unsplash.com/photo-1544717305-2782549b5136?w=800';
+  }
+  if (facebookTitle) {
+    facebookTitle.textContent = data.title || 'Video de Facebook';
+  }
+  if (facebookUploaderText) {
+    facebookUploaderText.textContent = data.uploader || 'Facebook Watch';
+  }
+  if (facebookDuration) {
+    facebookDuration.textContent = formatDuration(data.duration || 0);
+  }
+
+  setFacebookMode('video');
+  renderFacebookResolutions(data.resolutions || ['1080p', '720p', 'sd']);
+
+  facebookCard.classList.remove('hidden');
+  facebookCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+function setFacebookMode(mode) {
+  facebookCurrentMode = mode;
+  [btnModeFacebookVideo, btnModeFacebookAudio].forEach(btn => {
+    if (btn) btn.classList.remove('selected-yt');
+  });
+
+  if (mode === 'video' && btnModeFacebookVideo) {
+    btnModeFacebookVideo.classList.add('selected-yt');
+    if (facebookVideoChipsSection) facebookVideoChipsSection.classList.remove('hidden');
+    if (btnDownloadFacebookText) btnDownloadFacebookText.textContent = `Descargar Ahora (MP4 ${facebookSelectedQuality === 'best' ? 'HD' : facebookSelectedQuality})`;
+  } else if (mode === 'audio' && btnModeFacebookAudio) {
+    btnModeFacebookAudio.classList.add('selected-yt');
+    if (facebookVideoChipsSection) facebookVideoChipsSection.classList.add('hidden');
+    if (btnDownloadFacebookText) btnDownloadFacebookText.textContent = 'Descargar Ahora (Solo Audio MP3)';
+  }
+}
+
+if (btnModeFacebookVideo) btnModeFacebookVideo.addEventListener('click', () => setFacebookMode('video'));
+if (btnModeFacebookAudio) btnModeFacebookAudio.addEventListener('click', () => setFacebookMode('audio'));
+
+function renderFacebookResolutions(resList) {
+  if (!facebookQualityChipsGrid) return;
+  facebookQualityChipsGrid.innerHTML = '';
+
+  const list = resList.length > 0 ? resList : ['best'];
+  if (!list.includes('best')) list.unshift('best');
+
+  list.forEach((res, idx) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    const isSelected = (facebookSelectedQuality === res) || (idx === 0 && facebookSelectedQuality === 'best');
+    btn.className = `quality-chip p-3 text-left ${isSelected ? 'selected-fb' : ''}`;
+    const label = res === 'best' ? 'Máxima Calidad' : `${res.toUpperCase()}`;
+    btn.innerHTML = `
+      <div class="text-xs font-extrabold text-white flex items-center space-x-1.5">
+        <i class="fa-solid fa-circle-check text-xs ${isSelected ? 'text-blue-400' : 'text-slate-500'}"></i>
+        <span>${label}</span>
+      </div>
+      <div class="text-[10px] text-slate-400 mt-0.5">MP4 Video</div>
+    `;
+
+    btn.addEventListener('click', () => {
+      facebookSelectedQuality = res;
+      document.querySelectorAll('#facebookQualityChipsGrid .quality-chip').forEach(c => c.classList.remove('selected-fb'));
+      btn.classList.add('selected-fb');
+      if (btnDownloadFacebookText && facebookCurrentMode === 'video') {
+        btnDownloadFacebookText.textContent = `Descargar Ahora (MP4 ${res === 'best' ? 'HD' : res})`;
+      }
+    });
+
+    facebookQualityChipsGrid.appendChild(btn);
+  });
+}
+
+// Descargar video de Facebook
+if (btnDownloadFacebook) {
+  btnDownloadFacebook.addEventListener('click', async () => {
+    if (!facebookInspectedData) return;
+
+    btnDownloadFacebook.disabled = true;
+    btnDownloadFacebook.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Iniciando descarga...</span>';
+
+    try {
+      const res = await fetch('/api/download/facebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          url: facebookInspectedData.url,
+          mode: facebookCurrentMode,
+          quality: facebookSelectedQuality
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al iniciar descarga de Facebook');
+
+      showToast('Descarga de Facebook iniciada con éxito', 'success');
+      if (activeDownloadsSection) {
+        activeDownloadsSection.classList.remove('hidden');
+        activeDownloadsSection.scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      showToast(`Error: ${err.message}`, 'error');
+    } finally {
+      btnDownloadFacebook.disabled = false;
+      setFacebookMode(facebookCurrentMode);
+    }
+  });
+}
+
+// ==========================================================================
+// 5. Video to GIF Converter Studio Logic
+// ==========================================================================
+if (btnGifTabUpload && btnGifTabUrl) {
+  btnGifTabUpload.addEventListener('click', () => {
+    gifInputMode = 'upload';
+    btnGifTabUpload.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-white/15 text-white shadow';
+    btnGifTabUrl.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white';
+    if (gifUploadSection) gifUploadSection.classList.remove('hidden');
+    if (gifUrlSection) gifUrlSection.classList.add('hidden');
+  });
+
+  btnGifTabUrl.addEventListener('click', () => {
+    gifInputMode = 'url';
+    btnGifTabUrl.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 bg-white/15 text-white shadow';
+    btnGifTabUpload.className = 'flex-1 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white';
+    if (gifUrlSection) gifUrlSection.classList.remove('hidden');
+    if (gifUploadSection) gifUploadSection.classList.add('hidden');
+  });
+}
+
+// Drag & drop and file picker for GIF Converter
+if (gifDropzone && gifFileInput) {
+  gifDropzone.addEventListener('click', () => gifFileInput.click());
+
+  gifDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    gifDropzone.classList.add('border-amber-400', 'bg-amber-500/10');
+  });
+
+  ['dragleave', 'dragend'].forEach(evt => {
+    gifDropzone.addEventListener(evt, () => {
+      gifDropzone.classList.remove('border-amber-400', 'bg-amber-500/10');
+    });
+  });
+
+  gifDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    gifDropzone.classList.remove('border-amber-400', 'bg-amber-500/10');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleGifFileSelected(e.dataTransfer.files[0]);
+    }
+  });
+
+  gifFileInput.addEventListener('change', () => {
+    if (gifFileInput.files && gifFileInput.files.length > 0) {
+      handleGifFileSelected(gifFileInput.files[0]);
+    }
+  });
+}
+
+function handleGifFileSelected(file) {
+  if (!file.type.startsWith('video/')) {
+    showToast('Por favor selecciona un archivo de video válido', 'error');
+    return;
+  }
+  gifSelectedFile = file;
+  if (gifSelectedFileName) gifSelectedFileName.textContent = file.name;
+  if (gifSelectedFileSize) gifSelectedFileSize.textContent = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+  if (gifSelectedFileInfo) gifSelectedFileInfo.classList.remove('hidden');
+  showToast(`Video cargado: ${file.name}`, 'info');
+}
+
+if (btnPasteGifUrl && gifUrlInput) {
+  btnPasteGifUrl.addEventListener('click', async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      gifUrlInput.value = text;
+      showToast('Enlace pegado en el conversor a GIF', 'info');
+    } catch {
+      showToast('Permiso del portapapeles denegado', 'error');
+    }
+  });
+}
+
+// Preset selection for GIF
+gifQualityButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    gifQualityButtons.forEach(b => {
+      b.classList.remove('selected-yt');
+      b.classList.remove('border-amber-500/50', 'bg-amber-500/10');
+      b.classList.add('border-white/10', 'bg-slate-950/60');
+    });
+    btn.classList.add('selected-yt');
+    btn.classList.remove('border-white/10', 'bg-slate-950/60');
+    btn.classList.add('border-amber-500/50', 'bg-amber-500/10');
+    gifSelectedQuality = btn.getAttribute('data-quality') || 'medium';
+  });
+});
+
+// Start GIF conversion
+if (btnStartGifConvert) {
+  btnStartGifConvert.addEventListener('click', async () => {
+    const startTime = gifStartTimeInput ? gifStartTimeInput.value.trim() : '00:00:00';
+    const duration = gifDurationInput ? parseInt(gifDurationInput.value, 10) || 10 : 10;
+
+    btnStartGifConvert.disabled = true;
+    btnStartGifConvert.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles fa-spin"></i><span>Generando GIF...</span>';
+    if (gifResultCard) gifResultCard.classList.add('hidden');
+
+    try {
+      let res;
+      if (gifInputMode === 'upload') {
+        if (!gifSelectedFile) {
+          throw new Error('Selecciona o arrastra un archivo de video local');
+        }
+        const formData = new FormData();
+        formData.append('videoFile', gifSelectedFile);
+        formData.append('quality', gifSelectedQuality);
+        formData.append('startTime', startTime);
+        formData.append('duration', duration);
+
+        res = await fetch('/api/convert/video-to-gif', {
+          method: 'POST',
+          body: formData
+        });
+      } else {
+        const url = gifUrlInput ? gifUrlInput.value.trim() : '';
+        if (!url) {
+          throw new Error('Pega el enlace de la publicación o video a convertir');
+        }
+        res = await fetch('/api/convert/video-to-gif', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url,
+            quality: gifSelectedQuality,
+            startTime,
+            duration
+          })
+        });
+      }
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al generar el GIF');
+
+      showToast('¡GIF generado con éxito!', 'success');
+
+      if (gifResultCard && data.gifUrl) {
+        gifResultCard.classList.remove('hidden');
+        if (gifResultPreview) gifResultPreview.src = data.gifUrl;
+        if (gifResultTitle) gifResultTitle.textContent = data.filename || 'Animación GIF';
+        if (gifResultDetails) {
+          const qText = gifSelectedQuality === 'high' ? 'Alta (600px, 20fps)' : gifSelectedQuality === 'light' ? 'Ligera (320px, 12fps)' : 'Estándar (480px, 15fps)';
+          gifResultDetails.textContent = `Calidad: ${qText} • Paleta optimizada FFmpeg`;
+        }
+        if (btnDownloadGeneratedGif) {
+          btnDownloadGeneratedGif.href = data.gifUrl;
+          btnDownloadGeneratedGif.download = data.filename || 'video.gif';
+        }
+        gifResultCard.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      if (activeDownloadsSection) {
+        activeDownloadsSection.classList.remove('hidden');
+      }
+    } catch (err) {
+      showToast(`Error: ${err.message}`, 'error');
+    } finally {
+      btnStartGifConvert.disabled = false;
+      btnStartGifConvert.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i><span>Generar GIF Animado</span>';
+    }
+  });
+}
+
+// Copiar enlace directo del GIF generado
+if (btnCopyGeneratedGifUrl) {
+  btnCopyGeneratedGifUrl.addEventListener('click', async () => {
+    if (!btnDownloadGeneratedGif || !btnDownloadGeneratedGif.href) return;
+    try {
+      await navigator.clipboard.writeText(btnDownloadGeneratedGif.href);
+      showToast('¡Enlace directo del GIF copiado al portapapeles!', 'success');
+    } catch {
+      showToast('No se pudo copiar el enlace', 'error');
+    }
+  });
+}
+
+// ==========================================================================
 // 3. Render Active Jobs & History
 // ==========================================================================
 function renderActiveJobs() {
@@ -1302,9 +2027,12 @@ function renderActiveJobs() {
       statusBadge = `<span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 flex items-center space-x-1.5"><i class="fa-solid fa-circle-notch fa-spin"></i><span>${job.status || 'Descargando'}</span></span>`;
     }
 
-    const platformIcon = isSpotify 
-      ? '<i class="fa-brands fa-spotify text-emerald-400 text-sm"></i>' 
-      : '<i class="fa-brands fa-youtube text-rose-500 text-sm"></i>';
+    const platformIcon = 
+      job.platform === 'spotify' ? '<i class="fa-brands fa-spotify text-emerald-400 text-sm"></i>' :
+      job.platform === 'twitter' ? '<i class="fa-brands fa-x-twitter text-slate-100 text-sm"></i>' :
+      job.platform === 'facebook' ? '<i class="fa-brands fa-facebook text-[#1877F2] text-sm"></i>' :
+      job.platform === 'gif' ? '<i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-sm"></i>' :
+      '<i class="fa-brands fa-youtube text-rose-500 text-sm"></i>';
 
     const canCancel = !isCompleted && !isError && !isCancelled;
 
@@ -1379,6 +2107,9 @@ function renderHistory() {
 
   filtered.forEach(item => {
     const isSpotify = item.type === 'spotify';
+    const isTwitter = item.type === 'twitter';
+    const isFacebook = item.type === 'facebook';
+    const isGif = item.type === 'gif';
     const isVideo = item.type === 'youtube_video';
 
     const card = document.createElement('div');
@@ -1386,9 +2117,15 @@ function renderHistory() {
 
     const icon = isSpotify 
       ? '<i class="fa-brands fa-spotify text-emerald-400 text-lg"></i>' 
-      : isVideo 
-        ? '<i class="fa-brands fa-youtube text-rose-500 text-lg"></i>'
-        : '<i class="fa-solid fa-music text-indigo-400 text-lg"></i>';
+      : isTwitter
+        ? '<i class="fa-brands fa-x-twitter text-slate-200 text-lg"></i>'
+        : isFacebook
+          ? '<i class="fa-brands fa-facebook text-[#1877F2] text-lg"></i>'
+          : isGif
+            ? '<i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-lg"></i>'
+            : isVideo 
+              ? '<i class="fa-brands fa-youtube text-rose-500 text-lg"></i>'
+              : '<i class="fa-solid fa-music text-indigo-400 text-lg"></i>';
 
     card.innerHTML = `
       <div class="flex items-center space-x-3.5 overflow-hidden flex-1">
